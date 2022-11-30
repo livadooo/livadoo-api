@@ -1,0 +1,39 @@
+application:
+  security:
+    jwt:
+      secret:
+      token-validity-in-seconds:
+      refresh-secret:
+      refresh-token-validity-in-seconds:
+  password-reset-key:
+    validity-time-in-hours:
+
+spring:
+  data:
+    mongodb:
+      database: livadoo_db_dev
+      uri: mongodb://localhost:27017/
+      auto-index-creation: true
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+
+server:
+  port: 9000
+  servlet:
+    encoding:
+      force: true
+
+logging:
+  level:
+    com.livadoo.services: DEBUG
+
+livadoo:
+  storage:
+    path: storage-path
+    google-cloud:
+      bucket: bucket-name
+      old-bucket: bucket-name
+      patch-bucket: false
