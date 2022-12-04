@@ -1,10 +1,9 @@
 package com.livadoo.services.user.data
 
 import javax.validation.constraints.Email
-import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Size
 
-data class UserCreate(
+data class CustomerUserCreate(
     @field:Size(message = "INVALID_FIRSTNAME", max = 50, min = 2)
     val firstName: String,
     @field:Size(message = "INVALID_LASTNAME", max = 50, min = 2)

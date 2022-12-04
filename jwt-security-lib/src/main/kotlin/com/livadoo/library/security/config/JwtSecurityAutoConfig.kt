@@ -4,12 +4,10 @@ import com.livadoo.library.security.jwt.JwtValidator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 
-@Configuration
-@EnableConfigurationProperties(ApplicationSecurityProperties::class)
-class JwtSecurityAutoConfiguration @Autowired constructor(
-    private val securityProperties: ApplicationSecurityProperties
+@EnableConfigurationProperties(SecurityProperties::class)
+class JwtSecurityAutoConfig @Autowired constructor(
+    private val securityProperties: SecurityProperties
 ) {
 
     init {
@@ -19,5 +17,5 @@ class JwtSecurityAutoConfiguration @Autowired constructor(
     }
 
     @Bean
-    fun jwtValidator(): JwtValidator = JwtValidator(securityProperties)
+    fun jwtValidator(): JwtValidator = JwtValidator(securityProperties.jwt.secret)
 }

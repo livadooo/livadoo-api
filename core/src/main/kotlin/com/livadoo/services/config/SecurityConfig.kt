@@ -4,6 +4,7 @@ import com.livadoo.library.security.jwt.JwtFilter
 import com.livadoo.library.security.jwt.JwtValidator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.ReactiveAuthenticationManager
@@ -13,29 +14,29 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers
-import org.springframework.stereotype.Component
 import org.zalando.problem.spring.webflux.advice.security.SecurityProblemSupport
+
 
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
+@Configuration
 @Import(SecurityProblemSupport::class)
-@Component()
 class SecurityConfig @Autowired constructor(
-    private val jwtValidator: JwtValidator,
     private val problemSupport: SecurityProblemSupport,
-    private val userDetailsService: ReactiveUserDetailsService
+    private val userDetailsService: ReactiveUserDetailsService,
+    private val jwtValidator: JwtValidator
 ) {
 
     @Bean
     fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
+        return Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8()
     }
 
     @Bean
@@ -59,8 +60,8 @@ class SecurityConfig @Autowired constructor(
             .csrf().disable()
             .addFilterAt(JwtFilter(jwtValidator), SecurityWebFiltersOrder.HTTP_BASIC)
             .exceptionHandling()
-            .accessDeniedHandler(problemSupport)
             .authenticationEntryPoint(problemSupport)
+            .accessDeniedHandler(problemSupport)
             .and()
             .requestCache()
             .requestCache(NoOpServerRequestCache.getInstance())

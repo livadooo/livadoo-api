@@ -20,13 +20,14 @@ import com.livadoo.services.notification.services.mongodb.repository.EmailReposi
 import kotlinx.coroutines.reactor.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class MongoMailService @Autowired constructor(
     private val emailRepository: EmailRepository,
-    private val emailSender: EmailSender,
+    @Qualifier("zeptoMailSender") private val emailSender: EmailSender,
     private val emailTemplateService: EmailTemplateService
 ) : MailService {
 

@@ -1,9 +1,9 @@
 package com.livadoo.services.user.controller
 
 import com.livadoo.services.user.data.PasswordUpdate
-import com.livadoo.services.user.data.StaffCreate
+import com.livadoo.services.user.data.StaffUserCreate
 import com.livadoo.services.user.data.User
-import com.livadoo.services.user.data.UserCreate
+import com.livadoo.services.user.data.CustomerUserCreate
 import com.livadoo.services.user.data.UserUpdate
 import com.livadoo.services.user.security.AuthUserDTO
 import com.livadoo.services.user.services.AccountService
@@ -23,13 +23,13 @@ class UserController @Autowired constructor(
 ) {
 
     @PostMapping("/staff")
-    suspend fun createStaffUser(@RequestBody @Validated user: StaffCreate) {
+    suspend fun createStaffUser(@RequestBody @Validated user: StaffUserCreate) {
         return userService.createStaffUser(user)
     }
 
     @PostMapping("/customer")
-    suspend fun createCustomerUser(@RequestBody userCreate: UserCreate) {
-        return userService.createCustomerUser(userCreate)
+    suspend fun createCustomerUser(@RequestBody customerUserCreate: CustomerUserCreate) {
+        return userService.createCustomerUser(customerUserCreate)
     }
 
     @PutMapping

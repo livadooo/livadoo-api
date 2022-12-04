@@ -1,9 +1,9 @@
 package com.livadoo.services.user.services
 
 import com.livadoo.services.user.data.PasswordUpdate
-import com.livadoo.services.user.data.StaffCreate
+import com.livadoo.services.user.data.StaffUserCreate
 import com.livadoo.services.user.data.User
-import com.livadoo.services.user.data.UserCreate
+import com.livadoo.services.user.data.CustomerUserCreate
 import com.livadoo.services.user.data.UserUpdate
 import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
@@ -11,9 +11,9 @@ import org.springframework.http.codec.multipart.FilePart
 
 interface UserService {
 
-    suspend fun createStaffUser(staffCreate: StaffCreate)
+    suspend fun createStaffUser(staffUserCreate: StaffUserCreate)
 
-    suspend fun createCustomerUser(userCreate: UserCreate)
+    suspend fun createCustomerUser(customerUserCreate: CustomerUserCreate)
 
     suspend fun updateUser(userUpdate: UserUpdate): User
 

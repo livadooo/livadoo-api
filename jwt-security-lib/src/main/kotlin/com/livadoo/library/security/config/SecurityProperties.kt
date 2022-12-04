@@ -1,13 +1,15 @@
 package com.livadoo.library.security.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.boot.context.properties.ConstructorBinding
 
 @ConfigurationProperties(prefix = "application.security")
-data class ApplicationSecurityProperties(
+data class SecurityProperties(
     val jwt: Jwt
 ) {
     class Jwt(
         val secret: String,
+        val tokenValidityInSeconds: Long,
+        val refreshSecret: String,
+        val refreshTokenValidityInSeconds: Long
     )
 }

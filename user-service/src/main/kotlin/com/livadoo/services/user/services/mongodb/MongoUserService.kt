@@ -16,9 +16,8 @@ import com.livadoo.proxy.notification.model.StaffAccount
 import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.user.config.PasswordResetKeyProperties
 import com.livadoo.services.user.data.PasswordUpdate
-import com.livadoo.services.user.data.StaffCreate
+import com.livadoo.services.user.data.StaffUserCreate
 import com.livadoo.services.user.data.User
-import com.livadoo.services.user.data.UserCreate
 import com.livadoo.services.user.data.UserUpdate
 import com.livadoo.services.user.exceptions.SecureKeyNotFoundException
 import com.livadoo.services.user.exceptions.UserNotFoundException
@@ -72,7 +71,7 @@ class MongoUserService @Autowired constructor(
 
     private val logger = LoggerFactory.getLogger(MongoUserService::class.java)
 
-    override suspend fun createCustomerUser(userCreate: UserCreate) {
+    override suspend fun createCustomerUser(customerUserCreate: com.livadoo.services.user.data.CustomerUserCreate) {
         val isCurrentUserAdmin = hasCurrentUserThisAuthority(ROLE_ADMIN).awaitFirstOrDefault(false)
         val isCurrentUserEditor = hasCurrentUserThisAuthority(ROLE_EDITOR).awaitFirstOrDefault(false)
         val isCurrentUserCustomer = hasCurrentUserThisAuthority(ROLE_CUSTOMER).awaitFirstOrDefault(false)
@@ -82,17 +81,17 @@ class MongoUserService @Autowired constructor(
             throw NotAllowedException("You are not allowed to create a customer.")
         }
 
-        userRepository.findByEmailIgnoreCase(userCreate.email).awaitSingleOrNull()
+        userRepository.findByEmailIgnoreCase(customerUserCreate.email).awaitSingleOrNull()
             ?.also { user ->
                 if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserWithEmailAlreadyExistsException(userCreate.email)
+                else throw UserWithEmailAlreadyExistsException(customerUserCreate.email)
             }
 
         userRepository
-            .findByPhoneNumber(userCreate.phoneNumber).awaitSingleOrNull()
+            .findByPhoneNumber(customerUserCreate.phoneNumber).awaitSingleOrNull()
             ?.also { user ->
                 if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserWithPhoneNumberAlreadyExistsException(userCreate.phoneNumber)
+                else throw UserWithPhoneNumberAlreadyExistsException(customerUserCreate.phoneNumber)
             }
 
         val authorityEntities = authorityRepository.findAllById(listOf(ROLE_CUSTOMER)).asFlow().toList()
@@ -101,12 +100,12 @@ class MongoUserService @Autowired constructor(
         }
 
         val entity = UserEntity(
-            userCreate.firstName,
-            userCreate.lastName,
-            userCreate.phoneNumber,
+            customerUserCreate.firstName,
+            customerUserCreate.lastName,
+            customerUserCreate.phoneNumber,
             authorityEntities,
-            passwordEncoder.encode(userCreate.password),
-            userCreate.email,
+            passwordEncoder.encode(customerUserCreate.password),
+            customerUserCreate.email,
             null,
             verified = hasAdminRole,
             createdBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT),
@@ -144,7 +143,7 @@ class MongoUserService @Autowired constructor(
         logger.info("Customer user created")
     }
 
-    override suspend fun createStaffUser(staffCreate: StaffCreate) {
+    override suspend fun createStaffUser(staffUserCreate: StaffUserCreate) {
         val isCurrentUserAdmin = hasCurrentUserThisAuthority(ROLE_ADMIN).awaitFirstOrDefault(false)
 
         if (!isCurrentUserAdmin) {
@@ -152,32 +151,32 @@ class MongoUserService @Autowired constructor(
         }
 
         userRepository
-            .findByEmailIgnoreCase(staffCreate.email).awaitSingleOrNull()
+            .findByEmailIgnoreCase(staffUserCreate.email).awaitSingleOrNull()
             ?.also { user ->
                 if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserWithEmailAlreadyExistsException(staffCreate.email)
+                else throw UserWithEmailAlreadyExistsException(staffUserCreate.email)
             }
 
         userRepository
-            .findByPhoneNumber(staffCreate.phoneNumber).awaitSingleOrNull()
+            .findByPhoneNumber(staffUserCreate.phoneNumber).awaitSingleOrNull()
             ?.also { user ->
                 if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserWithPhoneNumberAlreadyExistsException(staffCreate.phoneNumber)
+                else throw UserWithPhoneNumberAlreadyExistsException(staffUserCreate.phoneNumber)
             }
 
-        val authorities = listOf(staffCreate.authority)
+        val authorities = listOf(staffUserCreate.authority)
         val authorityEntities = authorityRepository.findAllById(authorities).asFlow().toList()
         if (authorityEntities.isEmpty()) {
             throw BadInputException("Invalid authority", "The supplied authority is invalid.")
         }
         val generatedPassword = generatePassword()
         val entity = UserEntity(
-            staffCreate.firstName,
-            staffCreate.lastName,
-            staffCreate.phoneNumber,
+            staffUserCreate.firstName,
+            staffUserCreate.lastName,
+            staffUserCreate.phoneNumber,
             authorityEntities,
             passwordEncoder.encode(generatedPassword),
-            staffCreate.email,
+            staffUserCreate.email,
             null,
             verified = true,
             createdBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT),
@@ -270,7 +269,7 @@ class MongoUserService @Autowired constructor(
         val bytesOutputStream = ByteArrayOutputStream()
 
         filePart.content()
-            .map { it.asByteBuffer().array() }
+            .map { it.toByteBuffer().array() }
             .collectList()
             .awaitFirst()
             .forEach { bytes -> bytesOutputStream.write(bytes) }

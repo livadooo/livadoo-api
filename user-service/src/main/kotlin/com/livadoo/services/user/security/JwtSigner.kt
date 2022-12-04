@@ -1,7 +1,7 @@
 package com.livadoo.services.user.security
 
+import com.livadoo.library.security.config.SecurityProperties
 import com.livadoo.library.security.domain.AuthUser
-import com.livadoo.services.user.config.SecurityProperties
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm

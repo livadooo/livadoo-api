@@ -10,7 +10,7 @@ import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 
-@Service
+@Service("smtpSender")
 class SmtpEmailSender constructor(
     private val javaMailSender: JavaMailSender
 ) : EmailSender {

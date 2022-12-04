@@ -1,6 +1,5 @@
 package com.livadoo.library.security.jwt
 
-import com.livadoo.library.security.config.ApplicationSecurityProperties
 import com.livadoo.library.security.domain.AuthUser
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.JwtParser
@@ -17,7 +16,7 @@ private const val AUTHORITIES_KEY = "roles"
 private const val AUTHORITIES_DELIMITER = ","
 
 class JwtValidator constructor(
-    securityProperties: ApplicationSecurityProperties
+    secret: String
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(JwtValidator::class.java)
@@ -26,7 +25,7 @@ class JwtValidator constructor(
     private val jwtParser: JwtParser
 
     init {
-        val secretInBytes: ByteArray = securityProperties.jwt.secret.toByteArray()
+        val secretInBytes: ByteArray = secret.toByteArray()
         key = Keys.hmacShaKeyFor(secretInBytes)
         jwtParser = Jwts.parserBuilder().setSigningKey(key).build()
     }
