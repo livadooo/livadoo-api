@@ -25,7 +25,7 @@ class MongoStorageService @Autowired constructor(
 
     private val logger = LoggerFactory.getLogger(MongoStorageService::class.java)
 
-    override suspend fun upload(fileName: String, contentType: String, contentBytes: ByteArray): String {
+    override suspend fun uploadFile(fileName: String, contentType: String, contentBytes: ByteArray): String {
         logger.info("Uploading file")
         
         val uuid = "${UUID.randomUUID()}"

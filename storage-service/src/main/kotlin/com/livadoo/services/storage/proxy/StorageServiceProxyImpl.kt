@@ -11,6 +11,6 @@ class StorageServiceProxyImpl @Autowired constructor(
 ) : StorageServiceProxy {
 
     override suspend fun uploadFile(fileName: String, contentType: String, contentBytes: ByteArray): String {
-        return storageService.upload(fileName, contentType, contentBytes)
+        return storageService.uploadFile(fileName, contentType, contentBytes)
     }
 }

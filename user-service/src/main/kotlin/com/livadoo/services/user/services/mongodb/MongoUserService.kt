@@ -2,6 +2,7 @@ package com.livadoo.services.user.services.mongodb
 
 import com.livadoo.common.exceptions.BadInputException
 import com.livadoo.common.exceptions.NotAllowedException
+import com.livadoo.common.utils.extractContent
 import com.livadoo.library.security.domain.ROLE_ADMIN
 import com.livadoo.library.security.domain.ROLE_CUSTOMER
 import com.livadoo.library.security.domain.ROLE_EDITOR
@@ -36,7 +37,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrDefault
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
@@ -50,7 +50,6 @@ import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.util.Base64Utils
-import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -265,18 +264,7 @@ class MongoUserService @Autowired constructor(
         val userEntity = userRepository.findById(userId).awaitSingleOrNull()
             ?: throw UserNotFoundException(userId)
 
-        val contentType = filePart.headers()["content-type"]!![0]
-        val bytesOutputStream = ByteArrayOutputStream()
-
-        filePart.content()
-            .map { it.toByteBuffer().array() }
-            .collectList()
-            .awaitFirst()
-            .forEach { bytes -> bytesOutputStream.write(bytes) }
-
-        val avatarUuid = storageService.uploadFile(filePart.filename(), contentType, bytesOutputStream.toByteArray())
-        userEntity.avatarId = avatarUuid
-
+        userEntity.avatarId = uploadAvatar(filePart)
         userRepository.save(userEntity).awaitSingle()
     }
 
@@ -376,6 +364,11 @@ class MongoUserService @Autowired constructor(
             }
             secureKeyRepository.save(existingActivationKey).awaitSingle()
         }
+    }
+
+    private suspend fun uploadAvatar(filePart: FilePart): String {
+        val (contentType, contentBytes) = filePart.extractContent()
+        return storageService.uploadFile(filePart.filename(), contentType, contentBytes)
     }
 
     fun generatePassword(): String {

@@ -2,13 +2,12 @@ package com.livadoo.services.inventory.services.mongodb
 
 import com.livadoo.common.exceptions.NotAllowedException
 import com.livadoo.common.exceptions.UnauthorizedException
+import com.livadoo.common.utils.extractContent
 import com.livadoo.library.security.utils.currentAuthUser
 import com.livadoo.proxy.storage.StorageServiceProxy
-import com.livadoo.services.inventory.data.Category
 import com.livadoo.services.inventory.data.Product
 import com.livadoo.services.inventory.data.ProductCreate
 import com.livadoo.services.inventory.data.ProductEdit
-import com.livadoo.services.inventory.exceptions.CategoryNotFoundException
 import com.livadoo.services.inventory.exceptions.ProductNotFoundException
 import com.livadoo.services.inventory.services.ProductService
 import com.livadoo.services.inventory.services.mongodb.entity.ProductEntity
@@ -16,14 +15,12 @@ import com.livadoo.services.inventory.services.mongodb.entity.toDto
 import com.livadoo.services.inventory.services.mongodb.repository.ProductRepository
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
-import java.io.ByteArrayOutputStream
 
 @Service
 class MongoProductService @Autowired constructor(
@@ -127,15 +124,7 @@ class MongoProductService @Autowired constructor(
     }
 
     private suspend fun uploadFile(filePart: FilePart): String {
-        val contentType = filePart.headers()["content-type"]!![0]
-        val bytesOutputStream = ByteArrayOutputStream()
-
-        filePart.content()
-            .map { it.asByteBuffer().array() }
-            .collectList()
-            .awaitFirst()
-            .forEach { bytes -> bytesOutputStream.write(bytes) }
-
-        return storageService.uploadFile(filePart.filename(), contentType, bytesOutputStream.toByteArray())
+        val (contentType, contentBytes) = filePart.extractContent()
+        return storageService.uploadFile(filePart.filename(), contentType, contentBytes)
     }
 }

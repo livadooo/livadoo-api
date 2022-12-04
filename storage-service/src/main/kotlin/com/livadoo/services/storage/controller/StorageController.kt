@@ -1,8 +1,8 @@
 package com.livadoo.services.storage.controller
 
+import com.livadoo.common.utils.extractContent
 import com.livadoo.services.storage.data.Document
 import com.livadoo.services.storage.services.StorageService
-import kotlinx.coroutines.reactive.awaitFirst
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ContentDisposition
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
-import java.io.ByteArrayOutputStream
 
 
 @RestController
@@ -31,17 +30,9 @@ class StorageController @Autowired constructor(
     suspend fun upload(@RequestPart("file") filePart: FilePart): String {
         logger.info("REST --> Uploading file")
 
-        val contentType = filePart.headers()["content-type"]!![0]
-        val bytesOutputStream = ByteArrayOutputStream()
-
-        filePart.content()
-            .map { it.asByteBuffer().array() }
-            .collectList()
-            .awaitFirst()
-            .forEach { bytes -> bytesOutputStream.write(bytes) }
-
+        val (contentType, contentBytes) = filePart.extractContent()
         return storageService
-            .upload(filePart.filename(), contentType, bytesOutputStream.toByteArray())
+            .uploadFile(filePart.filename(), contentType, contentBytes)
             .also { logger.info("REST --> File uploaded") }
     }
 
