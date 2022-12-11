@@ -9,6 +9,9 @@ application:
     validity-time-in-hours:
 
 spring:
+  webflux:
+    problemdetails:
+      enabled: true
   data:
     mongodb:
       database: livadoo_db_dev
@@ -37,3 +40,7 @@ livadoo:
       bucket: bucket-name
       old-bucket: bucket-name
       patch-bucket: false
+
+error:
+  handling:
+    exception-logging: message_only

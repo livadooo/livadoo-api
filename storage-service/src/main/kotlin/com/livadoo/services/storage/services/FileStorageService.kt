@@ -1,7 +1,7 @@
 package com.livadoo.services.storage.services
 
 import com.livadoo.services.storage.config.LivadooProperties
-import com.livadoo.services.storage.exceptions.DocumentFileNotFoundException
+import com.livadoo.services.storage.exceptions.FileNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -10,7 +10,7 @@ import org.springframework.core.io.WritableResource
 import org.springframework.stereotype.Service
 import org.springframework.util.StreamUtils
 import java.io.File
-import java.io.FileNotFoundException
+import java.io.FileNotFoundException as MissingFileException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
@@ -41,9 +41,9 @@ class DefaultFileStorageService @Autowired constructor(
         val fileArray: ByteArray
         try {
             fileArray = File(uri).readBytes()
-        } catch (e: FileNotFoundException) {
+        } catch (ex: MissingFileException) {
             logger.error("$uri not found. Current folder is : $folder")
-            throw DocumentFileNotFoundException()
+            throw FileNotFoundException(uri)
         }
         return fileArray
     }

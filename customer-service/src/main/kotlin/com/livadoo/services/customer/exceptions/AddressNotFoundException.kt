@@ -4,4 +4,8 @@ import com.livadoo.common.exceptions.ObjectNotFoundException
 
 class AddressNotFoundException(
     addressId: String
-) : ObjectNotFoundException("Address not found", "Address with id $addressId not found")
+) : ObjectNotFoundException(
+    title = "Address not found",
+    detail = "Could not find address with id: $addressId",
+    statusCode = "40401"
+)

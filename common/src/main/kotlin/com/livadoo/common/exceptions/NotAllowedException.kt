@@ -1,11 +1,14 @@
 package com.livadoo.common.exceptions
 
-import org.zalando.problem.Status
-import javax.annotation.concurrent.Immutable
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
+import java.net.URI
 
-@Immutable
-class NotAllowedException(detail: String) : BaseThrowableProblem(
-    "You don't have access to this resource",
-    detail,
-    Status.FORBIDDEN,
-)
+@ResponseStatus(HttpStatus.FORBIDDEN)
+class NotAllowedException(
+    override val title: String = "Forbidden",
+    override val detail: String = "You are not allowed to perform this operation",
+    override val statusCode: String = "40300",
+    override val type: URI = DEFAULT_TYPE,
+    override val status: HttpStatus = HttpStatus.FORBIDDEN,
+) : AbstractThrowableProblem(title, detail)

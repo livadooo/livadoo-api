@@ -27,9 +27,10 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.zalando:problem-spring-webflux:0.27.0")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
     implementation("io.mongock:mongock-springboot")
     implementation("io.mongock:mongodb-reactive-driver")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 }

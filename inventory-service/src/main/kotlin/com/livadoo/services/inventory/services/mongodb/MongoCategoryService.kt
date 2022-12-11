@@ -38,7 +38,7 @@ class MongoCategoryService @Autowired constructor(
 
             categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
         } else {
-            throw NotAllowedException("You are not allowed to perform this operation")
+            throw NotAllowedException()
         }
     }
 
@@ -61,7 +61,7 @@ class MongoCategoryService @Autowired constructor(
 
             categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
         } else {
-            throw NotAllowedException("You are not allowed to perform this operation")
+            throw NotAllowedException()
         }
     }
 
@@ -78,7 +78,7 @@ class MongoCategoryService @Autowired constructor(
 
             categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
         } else {
-            throw NotAllowedException("You are not allowed to perform this operation")
+            throw NotAllowedException()
         }
     }
 

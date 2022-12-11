@@ -1,7 +1,8 @@
 package com.livadoo.services.user.data
 
-import javax.validation.constraints.Email
-import javax.validation.constraints.Size
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.Size
+
 
 data class CustomerUserCreate(
     @field:Size(message = "INVALID_FIRSTNAME", max = 50, min = 2)

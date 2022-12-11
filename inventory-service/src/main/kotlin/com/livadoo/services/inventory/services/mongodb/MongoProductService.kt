@@ -38,7 +38,7 @@ class MongoProductService @Autowired constructor(
 
             productRepository.save(productEntity).map { it.toDto() }.awaitSingle()
         } else {
-            throw NotAllowedException("You are not allowed to perform this operation")
+            throw NotAllowedException()
         }
     }
 
@@ -62,7 +62,7 @@ class MongoProductService @Autowired constructor(
 
             productRepository.save(productEntity).map { it.toDto() }.awaitSingle()
         } else {
-            throw NotAllowedException("You are not allowed to perform this operation")
+            throw NotAllowedException()
         }
     }
 
@@ -79,7 +79,7 @@ class MongoProductService @Autowired constructor(
 
             productRepository.save(productEntity).map { it.toDto() }.awaitSingle()
         } else {
-            throw NotAllowedException("You are not allowed to perform this operation")
+            throw NotAllowedException()
         }
     }
 

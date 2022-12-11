@@ -10,8 +10,8 @@ import com.livadoo.services.user.config.PasswordResetKeyProperties
 import com.livadoo.services.user.data.PasswordReset
 import com.livadoo.services.user.data.PasswordResetRequest as InternalPasswordResetRequest
 import com.livadoo.services.user.data.User
-import com.livadoo.services.user.exceptions.SecureKeyNotFoundException
-import com.livadoo.services.user.exceptions.UserNotFoundException
+import com.livadoo.services.user.exceptions.InvalidSecureKeyException
+import com.livadoo.services.user.exceptions.UserWithIdNotFoundException
 import com.livadoo.services.user.security.AuthUserDTO
 import com.livadoo.services.user.security.JwtSigner
 import com.livadoo.services.user.security.LoginCredentials
@@ -64,9 +64,9 @@ class MongoAccountService @Autowired constructor(
     }
 
     override suspend fun refreshToken(refreshToken: String): AuthUserDTO {
-        val userId = jwtSigner.getUserId(refreshToken) ?: throw UnauthorizedException("We can't verify who you are")
+        val userId = jwtSigner.getUserId(refreshToken) ?: throw UnauthorizedException()
         val user = userRepository.findById(userId).awaitSingleOrNull()
-            ?: throw UnauthorizedException("We can't verify who you are")
+            ?: throw UnauthorizedException()
         return internalAuthenticate(user)
     }
 
@@ -116,7 +116,7 @@ class MongoAccountService @Autowired constructor(
     override suspend fun resetPassword(passwordReset: PasswordReset) {
         val resetKey = secureKeyRepository.findByKey(passwordReset.resetKey).awaitSingleOrNull()
             ?.takeIf { it.expirationDate >= Instant.now() }
-            ?: throw SecureKeyNotFoundException(detail = "Clé de réinitialisation introuvable ou expirée")
+            ?: throw InvalidSecureKeyException(passwordReset.resetKey)
 
         userRepository.findById(resetKey.userId).awaitSingleOrNull()
             ?.apply {
@@ -129,7 +129,7 @@ class MongoAccountService @Autowired constructor(
                 userRepository.save(it).awaitSingle()
                 secureKeyRepository.delete(resetKey).awaitSingleOrNull()
             }
-            ?: throw UserNotFoundException(resetKey.userId)
+            ?: throw UserWithIdNotFoundException(resetKey.userId)
     }
 
     private fun signToken(authentication: Authentication): AuthUserDTO {
