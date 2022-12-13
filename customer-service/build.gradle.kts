@@ -8,4 +8,5 @@ dependencies {
     implementation(project(":jwt-security-lib"))
     implementation(project(":common"))
     implementation(project(":customer-service-proxy"))
+    implementation("io.github.wimdeblauwe:error-handling-spring-boot-starter:4.0.0")
 }

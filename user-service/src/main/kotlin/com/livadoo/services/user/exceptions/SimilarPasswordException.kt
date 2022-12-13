@@ -1,11 +1,8 @@
 package com.livadoo.services.user.exceptions
 
-import com.livadoo.common.exceptions.BadInputException
+import com.livadoo.common.exceptions.BadRequestException
 import com.livadoo.common.exceptions.ErrorCodes
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode
 
-class SimilarPasswordException(
-) : BadInputException(
-    title = "Similar passwords",
-    detail = "Passwords are too similar",
-    statusCode = ErrorCodes.SIMILAR_PASSWORD
-)
+@ResponseErrorCode(ErrorCodes.SIMILAR_PASSWORDS)
+class SimilarPasswordException : BadRequestException("Passwords are too similar")

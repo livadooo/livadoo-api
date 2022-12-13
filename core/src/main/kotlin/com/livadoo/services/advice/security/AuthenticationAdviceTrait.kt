@@ -10,6 +10,7 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
+import java.net.URI
 
 interface AuthenticationAdviceTrait : AdviceTrait {
 
@@ -31,8 +32,10 @@ interface AuthenticationAdviceTrait : AdviceTrait {
         ProblemDetail
             .forStatus(HttpStatus.UNAUTHORIZED)
             .apply {
-                title = "Unauthorized"
-                detail = "You are not authenticated"
-                setProperty("status_code", "401010")
+                type = URI.create("")
+                title = null
+                status = 401
+                setProperty("code", "401000")
+                setProperty("message", "You are not authenticated")
             }
 }

@@ -10,6 +10,7 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
+import java.net.URI
 
 interface AccessDeniedAdviceTrait : AdviceTrait {
 
@@ -31,8 +32,9 @@ interface AccessDeniedAdviceTrait : AdviceTrait {
         ProblemDetail
             .forStatus(HttpStatus.FORBIDDEN)
             .apply {
-                title = "Forbidden"
-                detail = "You are not allow to access this resource"
-                setProperty("status_code", "403010")
+                type = URI.create("")
+                title = null
+                detail = "You are not allowed to access this resource"
+                setProperty("code", "403000")
             }
 }

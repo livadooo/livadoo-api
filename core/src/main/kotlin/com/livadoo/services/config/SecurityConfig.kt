@@ -67,7 +67,7 @@ class SecurityConfig @Autowired constructor(
             .authorizeExchange { authorize ->
                 authorize
                     .pathMatchers("/v1/users/verify").permitAll()
-                    .pathMatchers("/v1/users/customer").permitAll()
+                    .pathMatchers("/v1/users/customer").hasAnyAuthority("ROLE_CUSTOMER")
                     .pathMatchers("/v1/users/block/*").permitAll()
                     .pathMatchers("/v1/users/login").permitAll()
                     .pathMatchers("/v1/users/token/refresh").permitAll()

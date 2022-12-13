@@ -1,11 +1,9 @@
 package com.livadoo.services.user.exceptions
 
-import com.livadoo.common.exceptions.BadInputException
+import com.livadoo.common.exceptions.BadRequestException
 import com.livadoo.common.exceptions.ErrorCodes
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode
 
+@ResponseErrorCode(ErrorCodes.WRONG_PASSWORD)
 class WrongPasswordException(
-) : BadInputException(
-    title = "Wrong password",
-    detail = "Password you entered is incorrect",
-    statusCode = ErrorCodes.WRONG_PASSWORD
-)
+) : BadRequestException("Wrong password")

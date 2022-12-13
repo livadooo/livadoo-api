@@ -21,7 +21,7 @@ import com.livadoo.services.user.data.StaffUserCreate
 import com.livadoo.services.user.data.User
 import com.livadoo.services.user.data.UserUpdate
 import com.livadoo.services.user.exceptions.BadAuthorityException
-import com.livadoo.services.user.exceptions.InvalidSecureKeyException
+import com.livadoo.services.user.exceptions.SecureKeyExpiredException
 import com.livadoo.services.user.exceptions.SimilarPasswordException
 import com.livadoo.services.user.exceptions.UserEmailTakenException
 import com.livadoo.services.user.exceptions.UserWithIdNotFoundException
@@ -194,7 +194,7 @@ class MongoUserService @Autowired constructor(
     override suspend fun verifyAccount(key: String): User {
         val activationKey = secureKeyRepository.findByKey(key).awaitSingleOrNull()
             ?.takeIf { it.expirationDate >= Instant.now() }
-            ?: throw InvalidSecureKeyException(key)
+            ?: throw SecureKeyExpiredException(key)
 
         val user = userRepository.findById(activationKey.userId).awaitSingleOrNull()
             ?.apply {

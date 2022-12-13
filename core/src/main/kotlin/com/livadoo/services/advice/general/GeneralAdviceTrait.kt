@@ -1,3 +1,0 @@
-package com.livadoo.services.advice.general
-
-interface GeneralAdviceTrait : ThrowableAdviceTrait, UnsupportedOperationAdviceTrait

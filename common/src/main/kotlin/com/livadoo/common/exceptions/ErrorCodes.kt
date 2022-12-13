@@ -10,7 +10,7 @@ object ErrorCodes {
     const val DOCUMENT_NOT_FOUND = "404015"
     const val ADDRESS_NOT_FOUND = "404016"
     const val CATEGORY_NOT_FOUND = "404017"
-    const val INVALID_SECURE_KEY = "404018"
+    const val SECURE_KEY_NOT_FOUND = "404018"
     const val PRODUCT_NOT_FOUND = "404019"
 
     /* 409xxx [CONFLICT] */
@@ -18,9 +18,10 @@ object ErrorCodes {
     const val USER_PHONE_IN_USE = "409011"
 
     /* 400xxx [BAD INPUT] */
-    const val BAD_INPUT = "400000"
     const val WRONG_PASSWORD = "400010"
-    const val SIMILAR_PASSWORD = "400011"
+    const val SIMILAR_PASSWORDS = "400011"
+    const val SECURE_KEY_EXPIRED = "400012"
+    const val AUTHORITY_INVALID = "400013"
 
     /* 401xxx [UNAUTHORIZED] */
     const val UNAUTHORIZED = "401010"
