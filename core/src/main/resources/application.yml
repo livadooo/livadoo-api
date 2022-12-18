@@ -9,19 +9,15 @@ application:
     validity-time-in-hours:
 
 spring:
-  webflux:
-    problemdetails:
-      enabled: true
   data:
     mongodb:
       database: livadoo_db_dev
       uri: mongodb://localhost:27017/
       auto-index-creation: true
-  mvc:
-    throw-exception-if-no-handler-found: true
   web:
     resources:
       add-mappings: false
+
 
 server:
   port: 9000
@@ -44,3 +40,9 @@ livadoo:
 error:
   handling:
     exception-logging: message_only
+    http-statuses:
+      java:
+        lang:
+          RuntimeException: bad_request
+    search-super-class-hierarchy: true
+

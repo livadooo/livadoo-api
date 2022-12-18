@@ -1,11 +1,11 @@
-package com.livadoo.services.inventory.exceptions
+package com.livadoo.services.user.exceptions
 
 import com.livadoo.common.exceptions.ErrorCodes
 import com.livadoo.common.exceptions.ObjectNotFoundException
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorProperty
 
-@ResponseErrorCode(ErrorCodes.PRODUCT_NOT_FOUND)
-class ProductNotFoundException(
-    @ResponseErrorProperty val productId: String
-) : ObjectNotFoundException("Could not find product with id: $productId")
+@ResponseErrorCode(ErrorCodes.SECURE_KEY_NOT_FOUND)
+class SecureKeyNotFoundException(
+     @ResponseErrorProperty val secureKey: String
+) : ObjectNotFoundException("Could not find secure key: $secureKey")

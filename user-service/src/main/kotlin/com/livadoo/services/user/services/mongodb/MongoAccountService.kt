@@ -10,7 +10,8 @@ import com.livadoo.services.user.config.PasswordResetKeyProperties
 import com.livadoo.services.user.data.PasswordReset
 import com.livadoo.services.user.data.PasswordResetRequest as InternalPasswordResetRequest
 import com.livadoo.services.user.data.User
-import com.livadoo.services.user.exceptions.InvalidSecureKeyException
+import com.livadoo.services.user.exceptions.SecureKeyExpiredException
+import com.livadoo.services.user.exceptions.SecureKeyNotFoundException
 import com.livadoo.services.user.exceptions.UserWithIdNotFoundException
 import com.livadoo.services.user.security.AuthUserDTO
 import com.livadoo.services.user.security.JwtSigner
@@ -115,8 +116,10 @@ class MongoAccountService @Autowired constructor(
 
     override suspend fun resetPassword(passwordReset: PasswordReset) {
         val resetKey = secureKeyRepository.findByKey(passwordReset.resetKey).awaitSingleOrNull()
-            ?.takeIf { it.expirationDate >= Instant.now() }
-            ?: throw InvalidSecureKeyException(passwordReset.resetKey)
+            ?: throw SecureKeyNotFoundException(passwordReset.resetKey)
+
+        resetKey.takeIf { it.expirationDate >= Instant.now() }
+            ?: throw SecureKeyExpiredException(passwordReset.resetKey)
 
         userRepository.findById(resetKey.userId).awaitSingleOrNull()
             ?.apply {

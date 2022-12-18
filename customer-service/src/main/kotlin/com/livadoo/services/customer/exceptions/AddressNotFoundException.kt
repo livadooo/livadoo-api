@@ -1,11 +1,11 @@
 package com.livadoo.services.customer.exceptions
 
+import com.livadoo.common.exceptions.ErrorCodes
 import com.livadoo.common.exceptions.ObjectNotFoundException
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorProperty
 
+@ResponseErrorCode(ErrorCodes.ADDRESS_NOT_FOUND)
 class AddressNotFoundException(
-    addressId: String
-) : ObjectNotFoundException(
-    title = "Address not found",
-    detail = "Could not find address with id: $addressId",
-    statusCode = "40401"
-)
+    @ResponseErrorProperty val addressId: String
+) : ObjectNotFoundException("Could not find address with id: $addressId")

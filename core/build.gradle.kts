@@ -33,4 +33,5 @@ dependencies {
     implementation("io.mongock:mongodb-reactive-driver")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("io.github.wimdeblauwe:error-handling-spring-boot-starter:4.0.0")
 }

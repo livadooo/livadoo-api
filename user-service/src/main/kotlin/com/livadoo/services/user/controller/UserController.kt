@@ -9,7 +9,6 @@ import com.livadoo.services.user.security.AuthUserDTO
 import com.livadoo.services.user.services.AccountService
 import com.livadoo.services.user.services.UserService
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
@@ -25,22 +24,22 @@ class UserController @Autowired constructor(
 ) {
 
     @PostMapping("/staff")
-    suspend fun createStaffUser(@Validated @RequestBody user: StaffUserCreate) {
+    suspend fun createStaffUser(@RequestBody @Valid user: StaffUserCreate) {
         return userService.createStaffUser(user)
     }
 
     @PostMapping("/customer")
-    suspend fun createCustomerUser(@Validated @RequestBody customerUserCreate: CustomerUserCreate) {
+    suspend fun createCustomerUser(@RequestBody @Valid customerUserCreate: CustomerUserCreate) {
         return userService.createCustomerUser(customerUserCreate)
     }
 
     @PutMapping
-    suspend fun updateUser(@Validated @RequestBody user: UserUpdate): User {
+    suspend fun updateUser(@RequestBody @Validated user: UserUpdate): User {
         return userService.updateUser(user)
     }
 
     @GetMapping("/verify")
-    suspend fun verifyAccount(@Valid @NotBlank @RequestParam("key") key: String): AuthUserDTO {
+    suspend fun verifyAccount(@RequestParam("key") key: String): AuthUserDTO {
         val user = userService.verifyAccount(key)
         return accountService.loginAfterAccountActivation(user.email)
     }

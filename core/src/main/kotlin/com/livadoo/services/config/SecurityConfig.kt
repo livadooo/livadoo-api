@@ -2,7 +2,6 @@ package com.livadoo.services.config
 
 import com.livadoo.library.security.jwt.JwtFilter
 import com.livadoo.library.security.jwt.JwtValidator
-import com.livadoo.services.advice.SecurityProblemSupport
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -28,8 +27,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 @EnableReactiveMethodSecurity
 class SecurityConfig @Autowired constructor(
     private val userDetailsService: ReactiveUserDetailsService,
-    private val jwtValidator: JwtValidator,
-    private val problemSupport: SecurityProblemSupport
+    private val jwtValidator: JwtValidator
 ) {
 
     @Bean
@@ -58,8 +56,6 @@ class SecurityConfig @Autowired constructor(
             .csrf().disable()
             .addFilterAt(JwtFilter(jwtValidator), SecurityWebFiltersOrder.HTTP_BASIC)
             .exceptionHandling()
-            .accessDeniedHandler(problemSupport)
-            .authenticationEntryPoint(problemSupport)
             .and()
             .requestCache()
             .requestCache(NoOpServerRequestCache.getInstance())
