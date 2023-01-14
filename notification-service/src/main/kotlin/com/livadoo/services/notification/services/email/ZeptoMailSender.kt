@@ -1,7 +1,7 @@
 package com.livadoo.services.notification.services.email
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.livadoo.common.utils.awaitAndParseResponse
+import com.livadoo.services.common.utils.awaitAndParseResponse
 import com.livadoo.services.notification.config.ZeptoMailProperties
 import com.livadoo.services.notification.data.DeliveryStatus
 import com.livadoo.services.notification.services.EmailSender

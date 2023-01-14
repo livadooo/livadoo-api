@@ -8,9 +8,9 @@ data class Product(
     val quantity: Int,
     val price: Float,
     val discountPrice: Float? = null,
-    val coverPictureId: String,
+    val pictureUrl: String,
     val ordersCount: Int,
-    val picturesIds: List<String>,
+    val slideshowPictureUrls: Map<Int, String>,
     val productId: String
 )
 

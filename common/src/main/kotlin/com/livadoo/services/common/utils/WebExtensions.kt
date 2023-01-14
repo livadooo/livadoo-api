@@ -1,4 +1,4 @@
-package com.livadoo.common.utils
+package com.livadoo.services.common.utils
 
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient

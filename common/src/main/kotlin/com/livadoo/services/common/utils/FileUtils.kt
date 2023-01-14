@@ -1,4 +1,4 @@
-package com.livadoo.common.utils
+package com.livadoo.services.common.utils
 
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.http.codec.multipart.FilePart

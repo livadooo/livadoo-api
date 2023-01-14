@@ -28,7 +28,7 @@ class UserController @Autowired constructor(
         return userService.createStaffUser(user)
     }
 
-    @PostMapping("/customer")
+    @PostMapping("/customers")
     suspend fun createCustomerUser(@RequestBody @Valid customerUserCreate: CustomerUserCreate) {
         return userService.createCustomerUser(customerUserCreate)
     }

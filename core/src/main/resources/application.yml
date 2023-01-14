@@ -31,10 +31,10 @@ logging:
 
 livadoo:
   storage:
-    path: storage-path
     google-cloud:
-      bucket: bucket-name
+      public-bucket: bucket-name
       old-bucket: bucket-name
+      new-bucket: bucket-name
       patch-bucket: false
 
 error:

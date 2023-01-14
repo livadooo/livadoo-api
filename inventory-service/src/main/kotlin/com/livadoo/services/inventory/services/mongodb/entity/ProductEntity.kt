@@ -14,9 +14,9 @@ data class ProductEntity(
     var categoryId: String,
     var quantity: Int,
     var price: Float,
-    var coverPictureId: String,
+    var pictureUrl: String,
     var ordersCount: Int = 0,
-    var picturesIds: List<String> = emptyList(),
+    var slideshowPictureUrls: Map<Int, String> = mapOf(),
     var active: Boolean = true,
     var discountPrice: Float? = null,
     var currency: Currency = Currency.CFA,
@@ -31,7 +31,6 @@ data class ProductEntity(
 )
 
 fun ProductEntity.toDto() = Product(
-    name, description, categoryId, currency,
-    quantity, price, discountPrice, coverPictureId,
-    ordersCount, picturesIds, id!!
+    name, description, categoryId, currency, quantity, price,
+    discountPrice, pictureUrl, ordersCount, slideshowPictureUrls, id!!
 )

@@ -1,6 +1,6 @@
 package com.livadoo.services.user.services.mongodb
 
-import com.livadoo.common.exceptions.NotAuthenticatedException
+import com.livadoo.services.common.exceptions.NotAuthenticatedException
 import com.livadoo.library.security.domain.AuthUser
 import com.livadoo.library.security.domain.SYSTEM_ACCOUNT
 import com.livadoo.library.security.utils.currentUserId

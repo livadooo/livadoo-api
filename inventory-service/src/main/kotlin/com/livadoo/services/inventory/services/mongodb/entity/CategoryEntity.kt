@@ -11,7 +11,7 @@ data class CategoryEntity(
     var name: String,
     var description: String,
     var parentId: String?,
-    var pictureId: String,
+    var pictureUrl: String,
     var active: Boolean,
     var createdAt: Instant = Instant.now(),
     var updatedAt: Instant? = null,
@@ -23,4 +23,4 @@ data class CategoryEntity(
     var version: Int = 0
 )
 
-fun CategoryEntity.toDto(): Category = Category(name, description, parentId, pictureId, active, id!!)
+fun CategoryEntity.toDto(): Category = Category(name, description, parentId, pictureUrl, active, id!!)

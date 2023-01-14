@@ -7,12 +7,21 @@ data class LivadooProperties(
     val storage: Storage
 ) {
     data class Storage(
-        val path: String,
-        val googleCloud: GoogleCloud
+        val googleCloud: GoogleCloud,
+        val local: LocalStorage,
     ) {
         data class GoogleCloud(
-            val bucket: String,
+            val publicBucket: String,
             val oldBucket: String,
+            val newBucket: String,
+            val patchBucket: Boolean = false
+        )
+
+        data class LocalStorage(
+            val path: String,
+            val baseUrl: String,
+            val oldBucket: String,
+            val newBucket: String,
             val patchBucket: Boolean = false
         )
     }

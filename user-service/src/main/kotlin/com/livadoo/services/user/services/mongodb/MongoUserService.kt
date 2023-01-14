@@ -1,7 +1,7 @@
 package com.livadoo.services.user.services.mongodb
 
-import com.livadoo.common.exceptions.NotAllowedException
-import com.livadoo.common.utils.extractContent
+import com.livadoo.services.common.exceptions.NotAllowedException
+import com.livadoo.services.common.utils.extractContent
 import com.livadoo.library.security.domain.ROLE_ADMIN
 import com.livadoo.library.security.domain.ROLE_CUSTOMER
 import com.livadoo.library.security.domain.ROLE_EDITOR
@@ -331,7 +331,7 @@ class MongoUserService @Autowired constructor(
 
     private suspend fun uploadAvatar(filePart: FilePart): String {
         val (contentType, contentBytes) = filePart.extractContent()
-        return storageService.uploadFile(filePart.filename(), contentType, contentBytes)
+        return storageService.uploadProfilePortrait(filePart.filename(), contentType, contentBytes)
     }
 
     fun generatePassword(): String {

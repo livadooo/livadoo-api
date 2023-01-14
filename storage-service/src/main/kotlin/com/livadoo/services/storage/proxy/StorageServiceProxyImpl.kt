@@ -10,7 +10,11 @@ class StorageServiceProxyImpl @Autowired constructor(
     private val storageService: StorageService
 ) : StorageServiceProxy {
 
-    override suspend fun uploadFile(fileName: String, contentType: String, contentBytes: ByteArray): String {
-        return storageService.uploadFile(fileName, contentType, contentBytes)
+    override suspend fun uploadProductImage(fileName: String, contentType: String, contentBytes: ByteArray): String {
+        return storageService.uploadProductImage(fileName, contentType, contentBytes)
+    }
+
+    override suspend fun uploadProfilePortrait(fileName: String, contentType: String, contentBytes: ByteArray): String {
+        return storageService.uploadProfilePortrait(fileName, contentType, contentBytes)
     }
 }
