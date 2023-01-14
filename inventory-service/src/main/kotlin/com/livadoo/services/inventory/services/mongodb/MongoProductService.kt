@@ -1,7 +1,7 @@
 package com.livadoo.services.inventory.services.mongodb
 
 import com.livadoo.common.exceptions.NotAllowedException
-import com.livadoo.common.exceptions.UnauthorizedException
+import com.livadoo.common.exceptions.NotAuthenticatedException
 import com.livadoo.common.utils.extractContent
 import com.livadoo.library.security.utils.currentAuthUser
 import com.livadoo.proxy.storage.StorageServiceProxy
@@ -29,7 +29,7 @@ class MongoProductService @Autowired constructor(
 ) : ProductService {
 
     override suspend fun createProduct(productCreate: ProductCreate, filePart: FilePart): Product {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException()
+        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
             val coverPictureId = uploadFile(filePart)
@@ -43,7 +43,7 @@ class MongoProductService @Autowired constructor(
     }
 
     override suspend fun updateProduct(productEdit: ProductEdit): Product {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException()
+        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
             val (name, description, categoryId, currency, quantity, price, productId, discountPrice) = productEdit
@@ -67,7 +67,7 @@ class MongoProductService @Autowired constructor(
     }
 
     override suspend fun updateProductCoverPicture(productId: String, filePart: FilePart): Product {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException()
+        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
             val productEntity = productRepository.findById(productId).awaitSingleOrNull()

@@ -1,7 +1,7 @@
 package com.livadoo.services.inventory.services.mongodb
 
 import com.livadoo.common.exceptions.NotAllowedException
-import com.livadoo.common.exceptions.UnauthorizedException
+import com.livadoo.common.exceptions.NotAuthenticatedException
 import com.livadoo.common.utils.extractContent
 import com.livadoo.library.security.utils.currentAuthUser
 import com.livadoo.proxy.storage.StorageServiceProxy
@@ -29,7 +29,7 @@ class MongoCategoryService @Autowired constructor(
 ) : CategoryService {
 
     override suspend fun createCategory(categoryCreate: CategoryCreate, filePart: FilePart): Category {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException()
+        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
             val pictureId = uploadFile(filePart)
@@ -43,7 +43,7 @@ class MongoCategoryService @Autowired constructor(
     }
 
     override suspend fun updateCategory(categoryEdit: CategoryEdit): Category {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException()
+        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
             val (name, description, parentId, active, categoryId) = categoryEdit
@@ -66,7 +66,7 @@ class MongoCategoryService @Autowired constructor(
     }
 
     override suspend fun updateCategoryPicture(categoryId: String, filePart: FilePart): Category {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException()
+        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
             val categoryEntity = categoryRepository.findById(categoryId).awaitSingleOrNull()

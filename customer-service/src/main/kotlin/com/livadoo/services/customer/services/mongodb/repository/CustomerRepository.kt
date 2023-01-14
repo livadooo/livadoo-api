@@ -11,6 +11,8 @@ interface CustomerRepository : ReactiveCrudRepository<CustomerEntity, String> {
 
     fun findByUserId(userId: String): Mono<CustomerEntity>
 
+    fun findAllByUserIdIn(userIds: List<String>): Flux<CustomerEntity>
+
     fun findByCustomerId(customerId: String): Mono<CustomerEntity>
 
     @Query("{}")

@@ -1,6 +1,6 @@
 package com.livadoo.services.customer.address
 
-import com.livadoo.common.exceptions.UnauthorizedException
+import com.livadoo.common.exceptions.NotAuthenticatedException
 import com.livadoo.library.security.utils.currentUserId
 import com.livadoo.services.customer.address.data.Address
 import com.livadoo.services.customer.address.data.AddressCreate
@@ -27,7 +27,7 @@ class MongoAddressService @Autowired constructor(
         val customerId = currentUserId.awaitSingleOrNull()
             ?.let { customerRepository.findByUserId(it).awaitSingle() }
             ?.customerId
-            ?: throw UnauthorizedException()
+            ?: throw NotAuthenticatedException()
 
         val addressEntity = AddressEntity(customerId, countryCode, fullName, phoneNumber, address, city, region, isDefault)
 
@@ -66,6 +66,6 @@ class MongoAddressService @Autowired constructor(
         return currentUserId.awaitFirstOrNull()
             ?.let { customerRepository.findByUserId(it).awaitSingle().customerId }
             ?.let { customerId -> addressRepository.findByCustomerId(customerId).map { it.toDto() }.asFlow().toList() }
-            ?: throw UnauthorizedException()
+            ?: throw NotAuthenticatedException()
     }
 }

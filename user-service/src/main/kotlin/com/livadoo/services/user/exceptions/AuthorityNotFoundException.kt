@@ -5,7 +5,7 @@ import com.livadoo.common.exceptions.ObjectNotFoundException
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorProperty
 
-@ResponseErrorCode(ErrorCodes.USER_WITH_ID_NOT_FOUND)
-class UserWithIdNotFoundException(
-    @ResponseErrorProperty val userId: String
-) : ObjectNotFoundException("Could not find user with id: $userId")
+@ResponseErrorCode(ErrorCodes.AUTHORITY_NOT_FOUND)
+class AuthorityNotFoundException(
+    @ResponseErrorProperty val authority: String
+) : ObjectNotFoundException("Could not find authority: $authority")

@@ -13,7 +13,7 @@ data class UserEntity(
     var lastName: String,
     @Indexed(unique = true)
     var phoneNumber: String,
-    var authorities: List<AuthorityEntity>,
+    val authority: String,
     var password: String,
     @Indexed(unique = true)
     var email: String,
@@ -36,7 +36,7 @@ data class UserEntity(
 
 
 fun UserEntity.toDto() = User(
-    firstName, lastName, phoneNumber, authorities.map { it.name }, email,
+    firstName, lastName, phoneNumber, authority, email,
     avatarId, address, city, country, verified, blocked, deleted, createdBy,
     createdAt, updatedBy, updatedAt, id
 )

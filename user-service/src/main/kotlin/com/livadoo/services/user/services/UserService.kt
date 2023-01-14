@@ -5,7 +5,8 @@ import com.livadoo.services.user.data.StaffUserCreate
 import com.livadoo.services.user.data.User
 import com.livadoo.services.user.data.CustomerUserCreate
 import com.livadoo.services.user.data.UserUpdate
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.codec.multipart.FilePart
 
 
@@ -19,9 +20,9 @@ interface UserService {
 
     suspend fun verifyAccount(key: String): User
 
-    suspend fun getAdminUsers(pageable: Pageable): Pair<List<User>, Long>
+    suspend fun getStaffUsers(pageRequest: PageRequest, query: String): Page<User>
 
-    suspend fun getCustomerUsers(pageable: Pageable): Pair<List<User>, Long>
+    suspend fun getCustomerUsers(pageRequest: PageRequest, query: String): Page<User>
 
     suspend fun getUsersByIds(userIds: List<String>): List<User>
 

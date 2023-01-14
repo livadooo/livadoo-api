@@ -10,8 +10,8 @@ import com.livadoo.services.user.services.AccountService
 import com.livadoo.services.user.services.UserService
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
-import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
@@ -44,26 +44,24 @@ class UserController @Autowired constructor(
         return accountService.loginAfterAccountActivation(user.email)
     }
 
-    @GetMapping("/admins")
-    suspend fun getAdminUsers(
+    @GetMapping("/staff")
+    suspend fun getStaffUsers(
+        @RequestParam("q", required = false) query: String?,
         @RequestParam("page", required = false) page: Int?,
         @RequestParam("size", required = false) size: Int?
-    ): ResponseEntity<List<User>> {
-        val (adminUsers, adminCount) = userService.getAdminUsers(PageRequest.of(page ?: 0, size ?: 100))
-        return ResponseEntity.ok()
-            .header("X-Total-Count", "$adminCount")
-            .body(adminUsers)
+    ): Page<User> {
+        val pageRequest = PageRequest.of(page ?: 0, size ?: 100)
+        return userService.getStaffUsers(pageRequest, query ?: "")
     }
 
     @GetMapping("/customers")
     suspend fun getCustomerUsers(
+        @RequestParam("q", required = false) query: String?,
         @RequestParam("page", required = false) page: Int?,
         @RequestParam("size", required = false) size: Int?
-    ): ResponseEntity<List<User>> {
-        val (customerUsers, customersCount) = userService.getCustomerUsers(PageRequest.of(page ?: 0, size ?: 100))
-        return ResponseEntity.ok()
-            .header("X-Total-Count", "$customersCount")
-            .body(customerUsers)
+    ): Page<User> {
+        val pageRequest = PageRequest.of(page ?: 0, size ?: 100)
+        return userService.getCustomerUsers(pageRequest, query ?: "")
     }
 
     @GetMapping("/byUserIds")

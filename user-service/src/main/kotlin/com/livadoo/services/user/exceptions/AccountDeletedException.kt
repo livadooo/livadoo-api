@@ -1,11 +1,11 @@
 package com.livadoo.services.user.exceptions
 
-import com.livadoo.common.exceptions.BadRequestException
 import com.livadoo.common.exceptions.ErrorCodes
+import com.livadoo.common.exceptions.UnauthorizedException
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorProperty
 
-@ResponseErrorCode(ErrorCodes.USER_EMAIL_IN_USE)
-class UserEmailTakenException(
-    @ResponseErrorProperty val email: String
-) : BadRequestException("Email address: $email is already in use")
+@ResponseErrorCode(ErrorCodes.ACCOUNT_DELETED)
+class AccountDeletedException(
+    @ResponseErrorProperty val title: String = "Account deleted",
+) : UnauthorizedException("Your account is deleted")

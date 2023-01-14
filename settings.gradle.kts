@@ -4,6 +4,7 @@ include(
     "core",
     "jwt-security-lib",
     "user-service",
+    "user-service-proxy",
     "common",
     "notification-service",
     "inventory-service",

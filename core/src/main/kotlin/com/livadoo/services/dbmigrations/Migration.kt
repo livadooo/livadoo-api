@@ -42,13 +42,31 @@ class CreateDefaultAdminChangeUnit {
             firstName = "Super",
             lastName = "Admin",
             phoneNumber = "+237670000000",
-            authorities = mutableListOf(AuthorityEntity(ROLE_ADMIN)),
+            authority = ROLE_ADMIN,
             password = passwordEncoder.encode("1234"),
             email = "admin@livadoo.com",
             verified = true
         )
+        val customerUser1 = UserEntity(
+            firstName = "John",
+            lastName = "Doe",
+            phoneNumber = "+237670000001",
+            authority = ROLE_CUSTOMER,
+            password = passwordEncoder.encode("1234"),
+            email = "customer1@livadoo.com",
+            verified = true
+        )
+        val customerUser2 = UserEntity(
+            firstName = "Jane",
+            lastName = "Doe",
+            phoneNumber = "+237670000002",
+            authority = ROLE_CUSTOMER,
+            password = passwordEncoder.encode("1234"),
+            email = "customer2@livadoo.com",
+            verified = true
+        )
         val subscriberSync = MongoSubscriberSync<UserEntity>()
-        userRepository.save(adminUser).subscribe(subscriberSync)
+        userRepository.saveAll(listOf(adminUser, customerUser1, customerUser2)).subscribe(subscriberSync)
         subscriberSync.await()
     }
 
