@@ -32,7 +32,7 @@ class MongoProductService @Autowired constructor(
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
-            val coverPictureUrl = uploadFile(filePart)
+            val coverPictureUrl = uploadProductImage(filePart)
             val (name, description, categoryId, quantity, price) = productCreate
             val productEntity = ProductEntity(name, description, categoryId, quantity, price, coverPictureUrl, createdBy = currentUser.username)
 
@@ -66,16 +66,17 @@ class MongoProductService @Autowired constructor(
         }
     }
 
-    override suspend fun updateProductCoverPicture(productId: String, filePart: FilePart): Product {
+    override suspend fun updateProductImage(productId: String, filePart: FilePart): String {
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
             val productEntity = productRepository.findById(productId).awaitSingleOrNull()
                 ?: throw ProductNotFoundException(productId)
 
-            productEntity.pictureUrl = uploadFile(filePart)
+            productEntity.pictureUrl = uploadProductImage(filePart)
 
-            productRepository.save(productEntity).map { it.toDto() }.awaitSingle()
+            productRepository.save(productEntity).map { it.toDto() }.awaitSingle().pictureUrl
+
         } else {
             throw NotAllowedException()
         }
@@ -121,7 +122,7 @@ class MongoProductService @Autowired constructor(
         return products to productCount
     }
 
-    private suspend fun uploadFile(filePart: FilePart): String {
+    private suspend fun uploadProductImage(filePart: FilePart): String {
         val (contentType, contentBytes) = filePart.extractContent()
         return storageService.uploadProductImage(filePart.filename(), contentType, contentBytes)
     }

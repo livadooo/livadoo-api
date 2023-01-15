@@ -14,6 +14,10 @@ class StorageServiceProxyImpl @Autowired constructor(
         return storageService.uploadProductImage(fileName, contentType, contentBytes)
     }
 
+    override suspend fun uploadCategoryImage(fileName: String, contentType: String, contentBytes: ByteArray): String {
+        return storageService.uploadCategoryImage(fileName, contentType, contentBytes)
+    }
+
     override suspend fun uploadProfilePortrait(fileName: String, contentType: String, contentBytes: ByteArray): String {
         return storageService.uploadProfilePortrait(fileName, contentType, contentBytes)
     }

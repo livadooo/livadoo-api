@@ -13,7 +13,7 @@ data class CustomerUser(
     var authority: String,
     val email: String,
     val userId: String,
-    val avatarUrl: String? = null
+    val portraitUrl: String? = null
 ) {
     constructor(customer: Customer, user: User) : this(
         customer.customerId,
@@ -26,6 +26,6 @@ data class CustomerUser(
         user.authority,
         user.email,
         user.userId,
-        user.avatarUrl,
+        user.portraitUrl,
     )
 }

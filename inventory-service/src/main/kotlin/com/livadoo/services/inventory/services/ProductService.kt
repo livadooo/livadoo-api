@@ -12,7 +12,7 @@ interface ProductService {
 
     suspend fun updateProduct(productEdit: ProductEdit): Product
 
-    suspend fun updateProductCoverPicture(productId: String, filePart: FilePart): Product
+    suspend fun updateProductImage(productId: String, filePart: FilePart): String
 
     suspend fun getProduct(productId: String): Product
 

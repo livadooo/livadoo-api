@@ -9,6 +9,6 @@ data class User(
     val country: String?,
     val address: String?,
     var authority: String,
-    val avatarUrl: String?,
+    val portraitUrl: String?,
     val userId: String,
 )

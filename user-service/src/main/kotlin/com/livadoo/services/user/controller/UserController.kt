@@ -98,12 +98,17 @@ class UserController @Autowired constructor(
         return userService.changePassword(userId, passwordUpdate)
     }
 
-    @PutMapping("/avatar/{userId}")
-    suspend fun updateUserAvatar(
-        @RequestPart("avatar") filePart: FilePart,
+    @PutMapping("/{userId}/portrait")
+    suspend fun updateUserPortrait(
+        @RequestPart("file") filePart: FilePart,
         @PathVariable userId: String
-    ) {
-        return userService.updateUserAvatar(filePart, userId)
+    ): String {
+        return userService.updateUserPortrait(filePart, userId)
+    }
+
+    @DeleteMapping("/{userId}/portrait")
+    suspend fun updateUserPortrait(@PathVariable userId: String) {
+        return userService.deleteUserPortrait(userId)
     }
 
     companion object {

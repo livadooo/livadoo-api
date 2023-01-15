@@ -30,6 +30,10 @@ class MongoStorageService @Autowired constructor(
         return uploadFile("products", fileName, contentType, contentBytes)
     }
 
+    override suspend fun uploadCategoryImage(fileName: String, contentType: String, contentBytes: ByteArray): String {
+        return uploadFile("categories", fileName, contentType, contentBytes)
+    }
+
     override suspend fun uploadProfilePortrait(fileName: String, contentType: String, contentBytes: ByteArray): String {
         return uploadFile("profile-portraits", fileName, contentType, contentBytes)
     }
@@ -43,7 +47,7 @@ class MongoStorageService @Autowired constructor(
         val uri = fileStorageService.upload(name, contentBytes, directory)
         val entity = DocumentEntity(uuid, uri, fileName, contentType, Instant.now())
         documentRepository.save(entity).awaitFirstOrNull()
-        
+        logger.info("File successfully uploaded with uuid -> $uuid")
         return "${properties.storage.local.baseUrl}/$uuid"
     }
 

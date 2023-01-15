@@ -31,6 +31,6 @@ fun InternalUser.toUser(): User = User(
     country,
     address,
     authority,
-    avatarUrl,
+    portraitUrl,
     userId!!
 )

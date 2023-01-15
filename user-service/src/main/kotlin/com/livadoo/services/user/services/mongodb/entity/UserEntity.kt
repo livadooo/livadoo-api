@@ -17,7 +17,7 @@ data class UserEntity(
     var password: String,
     @Indexed(unique = true)
     var email: String,
-    var avatarId: String? = null,
+    var portraitUrl: String? = null,
     var address: String? = null,
     var city: String? = null,
     var country: String? = null,
@@ -37,6 +37,6 @@ data class UserEntity(
 
 fun UserEntity.toDto() = User(
     firstName, lastName, phoneNumber, authority, email,
-    avatarId, address, city, country, verified, blocked, deleted, createdBy,
+    portraitUrl, address, city, country, verified, blocked, deleted, createdBy,
     createdAt, updatedBy, updatedAt, id
 )

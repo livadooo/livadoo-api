@@ -26,6 +26,13 @@ class GoogleCloudFileStorageService @Autowired constructor(
             .also { logger.info("Product image successfully uploaded to Google Storage") }
     }
 
+    override suspend fun uploadCategoryImage(fileName: String, contentType: String, contentBytes: ByteArray): String {
+        logger.info("Uploading category image to Google Cloud Storage")
+
+        return upload("categories", fileName, contentType, contentBytes)
+            .also { logger.info("category image successfully uploaded to Google Storage") }
+    }
+
     override suspend fun uploadProfilePortrait(fileName: String, contentType: String, contentBytes: ByteArray): String {
         logger.info("Uploading profile portrait to local storage")
 
