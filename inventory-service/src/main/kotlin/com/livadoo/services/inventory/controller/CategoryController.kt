@@ -41,12 +41,12 @@ class CategoryController @Autowired constructor(
         categoryService.updateCategory(categoryEdit)
     }
 
-    @PutMapping("/{categoryId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    suspend fun updateCategoryPicture(
+    @PutMapping("/{categoryId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    suspend fun updateCategoryImage(
         @PathVariable categoryId: String,
-        @RequestPart("image") filePart: FilePart
-    ) {
-        categoryService.updateCategoryPicture(categoryId, filePart)
+        @RequestPart("file") filePart: FilePart
+    ): String {
+        return categoryService.updateCategoryImage(categoryId, filePart)
     }
 
     @GetMapping("/{categoryId}")

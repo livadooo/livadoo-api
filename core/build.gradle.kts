@@ -18,8 +18,8 @@ dependencyManagement {
 
 dependencies {
     implementation(project(":jwt-security-lib"))
-    implementation(project(":user-service"))
     implementation(project(":notification-service"))
+    implementation(project(":user-service"))
     implementation(project(":customer-service"))
     implementation(project(":storage-service"))
     implementation(project(":inventory-service"))

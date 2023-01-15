@@ -3,9 +3,6 @@ package com.livadoo.services.inventory.services
 import com.livadoo.services.inventory.data.Category
 import com.livadoo.services.inventory.data.CategoryCreate
 import com.livadoo.services.inventory.data.CategoryEdit
-import com.livadoo.services.inventory.data.Product
-import com.livadoo.services.inventory.data.ProductCreate
-import com.livadoo.services.inventory.data.ProductEdit
 import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
 
@@ -15,7 +12,7 @@ interface CategoryService {
 
     suspend fun updateCategory(categoryEdit: CategoryEdit): Category
 
-    suspend fun updateCategoryPicture(categoryId: String, filePart: FilePart): Category
+    suspend fun updateCategoryImage(categoryId: String, filePart: FilePart): String
 
     suspend fun getCategory(categoryId: String): Category
 

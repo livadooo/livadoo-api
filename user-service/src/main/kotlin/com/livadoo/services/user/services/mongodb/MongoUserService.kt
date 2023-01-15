@@ -1,7 +1,7 @@
 package com.livadoo.services.user.services.mongodb
 
-import com.livadoo.common.exceptions.NotAllowedException
-import com.livadoo.common.utils.extractContent
+import com.livadoo.services.common.exceptions.NotAllowedException
+import com.livadoo.services.common.utils.extractContent
 import com.livadoo.library.security.domain.ROLE_ADMIN
 import com.livadoo.library.security.domain.ROLE_CUSTOMER
 import com.livadoo.library.security.domain.ROLE_EDITOR
@@ -243,11 +243,19 @@ class MongoUserService @Autowired constructor(
             .also { logger.debug("User with userId: ${it.userId} was successfully updated") }
     }
 
-    override suspend fun updateUserAvatar(filePart: FilePart, userId: String) {
+    override suspend fun updateUserPortrait(filePart: FilePart, userId: String): String {
         val userEntity = userRepository.findById(userId).awaitSingleOrNull()
             ?: throw UserNotFoundException(userId)
 
-        userEntity.avatarId = uploadAvatar(filePart)
+        userEntity.portraitUrl = uploadPortrait(filePart)
+        return userRepository.save(userEntity).awaitSingle().portraitUrl!!
+    }
+
+    override suspend fun deleteUserPortrait(userId: String) {
+        val userEntity = userRepository.findById(userId).awaitSingleOrNull()
+            ?: throw UserNotFoundException(userId)
+
+        userEntity.portraitUrl = null
         userRepository.save(userEntity).awaitSingle()
     }
 
@@ -329,9 +337,9 @@ class MongoUserService @Autowired constructor(
             .awaitFirst()
     }
 
-    private suspend fun uploadAvatar(filePart: FilePart): String {
+    private suspend fun uploadPortrait(filePart: FilePart): String {
         val (contentType, contentBytes) = filePart.extractContent()
-        return storageService.uploadFile(filePart.filename(), contentType, contentBytes)
+        return storageService.uploadProfilePortrait(filePart.filename(), contentType, contentBytes)
     }
 
     fun generatePassword(): String {

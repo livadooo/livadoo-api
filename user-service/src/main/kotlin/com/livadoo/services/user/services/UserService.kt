@@ -36,5 +36,7 @@ interface UserService {
 
     suspend fun changePassword(userId: String, passwordUpdate: PasswordUpdate)
 
-    suspend fun updateUserAvatar(filePart: FilePart, userId: String)
+    suspend fun updateUserPortrait(filePart: FilePart, userId: String): String
+
+    suspend fun deleteUserPortrait(userId: String)
 }

@@ -1,6 +1,6 @@
 package com.livadoo.services.customer.address
 
-import com.livadoo.common.exceptions.NotAuthenticatedException
+import com.livadoo.services.common.exceptions.NotAuthenticatedException
 import com.livadoo.library.security.utils.currentUserId
 import com.livadoo.services.customer.address.data.Address
 import com.livadoo.services.customer.address.data.AddressCreate

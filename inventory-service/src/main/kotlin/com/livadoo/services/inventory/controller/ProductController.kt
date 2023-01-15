@@ -41,12 +41,12 @@ class ProductController @Autowired constructor(
         productService.updateProduct(productEdit)
     }
 
-    @PutMapping("/{productId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    suspend fun updateProductCoverPicture(
+    @PutMapping("/{productId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    suspend fun updateProductImage(
         @PathVariable productId: String,
-        @RequestPart("picture") filePart: FilePart
-    ) {
-        productService.updateProductCoverPicture(productId, filePart)
+        @RequestPart("file") filePart: FilePart
+    ): String {
+        return productService.updateProductImage(productId, filePart)
     }
 
     @GetMapping("/{productId}")

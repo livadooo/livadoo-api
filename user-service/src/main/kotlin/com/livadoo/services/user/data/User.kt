@@ -23,7 +23,7 @@ data class User(
                 + "([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$"
     )
     var email: String,
-    var avatarUrl: String? = null,
+    var portraitUrl: String? = null,
     var address: String? = null,
     var city: String? = null,
     var country: String? = null,

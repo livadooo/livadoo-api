@@ -1,8 +1,8 @@
 package com.livadoo.services.inventory.services.mongodb
 
-import com.livadoo.common.exceptions.NotAllowedException
-import com.livadoo.common.exceptions.NotAuthenticatedException
-import com.livadoo.common.utils.extractContent
+import com.livadoo.services.common.exceptions.NotAllowedException
+import com.livadoo.services.common.exceptions.NotAuthenticatedException
+import com.livadoo.services.common.utils.extractContent
 import com.livadoo.library.security.utils.currentAuthUser
 import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.inventory.data.Category
@@ -25,16 +25,16 @@ import org.springframework.stereotype.Service
 @Service
 class MongoCategoryService @Autowired constructor(
     private val categoryRepository: CategoryRepository,
-    private val storageService: StorageServiceProxy
+    private val storageService: StorageServiceProxy,
 ) : CategoryService {
 
     override suspend fun createCategory(categoryCreate: CategoryCreate, filePart: FilePart): Category {
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
-            val pictureId = uploadFile(filePart)
+            val pictureUrl = uploadCategoryImage(filePart)
             val (name, description, parentId) = categoryCreate
-            val categoryEntity = CategoryEntity(name, description, parentId, pictureId, true, createdBy = currentUser.username)
+            val categoryEntity = CategoryEntity(name, description, parentId, pictureUrl, true, createdBy = currentUser.username)
 
             categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
         } else {
@@ -65,18 +65,16 @@ class MongoCategoryService @Autowired constructor(
         }
     }
 
-    override suspend fun updateCategoryPicture(categoryId: String, filePart: FilePart): Category {
+    override suspend fun updateCategoryImage(categoryId: String, filePart: FilePart): String {
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
             val categoryEntity = categoryRepository.findById(categoryId).awaitSingleOrNull()
                 ?: throw CategoryNotFoundException(categoryId)
 
-            val pictureId = uploadFile(filePart)
+            categoryEntity.pictureUrl = uploadCategoryImage(filePart)
 
-            categoryEntity.pictureId = pictureId
-
-            categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
+            categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle().pictureUrl
         } else {
             throw NotAllowedException()
         }
@@ -105,8 +103,8 @@ class MongoCategoryService @Autowired constructor(
         return categories to categoriesCount
     }
 
-    private suspend fun uploadFile(filePart: FilePart): String {
+    private suspend fun uploadCategoryImage(filePart: FilePart): String {
         val (contentType, contentBytes) = filePart.extractContent()
-        return storageService.uploadFile(filePart.filename(), contentType, contentBytes)
+        return storageService.uploadCategoryImage(filePart.filename(), contentType, contentBytes)
     }
 }

@@ -10,7 +10,6 @@ data class UserUpdate(
     val lastName: String,
     val phoneNumber: String,
     val userId: String,
-    val authority: String,
     val address: String? = null,
     val city: String? = null,
     val country: String? = null,

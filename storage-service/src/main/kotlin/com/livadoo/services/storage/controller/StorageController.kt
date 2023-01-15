@@ -1,6 +1,6 @@
 package com.livadoo.services.storage.controller
 
-import com.livadoo.common.utils.extractContent
+import com.livadoo.services.common.utils.extractContent
 import com.livadoo.services.storage.extension.extractHeaders
 import com.livadoo.services.storage.services.StorageService
 import org.slf4j.LoggerFactory
@@ -23,14 +23,18 @@ class StorageController @Autowired constructor(
 
     private val logger = LoggerFactory.getLogger(StorageController::class.java)
 
-    @PostMapping
-    suspend fun upload(@RequestPart("file") filePart: FilePart): String {
-        logger.info("REST --> Uploading file")
-
+    @PostMapping("/profile-portraits")
+    suspend fun uploadProfileImage(@RequestPart("file") filePart: FilePart): String {
         val (contentType, contentBytes) = filePart.extractContent()
-        return storageService
-            .uploadFile(filePart.filename(), contentType, contentBytes)
-            .also { logger.info("REST --> File uploaded") }
+
+        return storageService.uploadProfilePortrait(filePart.filename(), contentType, contentBytes)
+    }
+
+    @PostMapping("/products")
+    suspend fun uploadProductImage(@RequestPart("file") filePart: FilePart): String {
+        val (contentType, contentBytes) = filePart.extractContent()
+
+        return storageService.uploadProductImage(filePart.filename(), contentType, contentBytes)
     }
 
     @GetMapping("/{uuid}")

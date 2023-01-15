@@ -1,4 +1,4 @@
-package com.livadoo.common.exceptions
+package com.livadoo.services.common.exceptions
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorProperty
