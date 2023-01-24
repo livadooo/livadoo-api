@@ -18,6 +18,8 @@ object ErrorCodes {
 
     /* 403xxx [FORBIDDEN] */
     const val FORBIDDEN = "403001"
+    const val NOT_ALLOWED_TO_CREATE_USER = "403002"
+    const val NOT_ALLOWED_TO_EDIT_USER = "403003"
 
     /* 404xxx [NOT FOUND] */
     const val USER_NOT_FOUND = "404001"

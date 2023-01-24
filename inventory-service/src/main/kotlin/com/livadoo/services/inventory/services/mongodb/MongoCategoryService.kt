@@ -31,7 +31,7 @@ class MongoCategoryService @Autowired constructor(
     override suspend fun createCategory(categoryCreate: CategoryCreate, filePart: FilePart): Category {
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
-        return if (currentUser.isAdmin) {
+        return if (currentUser.isStaff) {
             val pictureUrl = uploadCategoryImage(filePart)
             val (name, description, parentId) = categoryCreate
             val categoryEntity = CategoryEntity(name, description, parentId, pictureUrl, true, createdBy = currentUser.username)
@@ -45,7 +45,7 @@ class MongoCategoryService @Autowired constructor(
     override suspend fun updateCategory(categoryEdit: CategoryEdit): Category {
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
-        return if (currentUser.isAdmin) {
+        return if (currentUser.isStaff) {
             val (name, description, parentId, active, categoryId) = categoryEdit
             parentId?.let { categoryRepository.findById(it).awaitSingleOrNull() ?: throw CategoryNotFoundException(it) }
 
@@ -68,7 +68,7 @@ class MongoCategoryService @Autowired constructor(
     override suspend fun updateCategoryImage(categoryId: String, filePart: FilePart): String {
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
-        return if (currentUser.isAdmin) {
+        return if (currentUser.isStaff) {
             val categoryEntity = categoryRepository.findById(categoryId).awaitSingleOrNull()
                 ?: throw CategoryNotFoundException(categoryId)
 

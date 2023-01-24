@@ -11,6 +11,9 @@ class AuthUser(
     val isCustomer: Boolean
         get() = authorities.firstOrNull { it.authority == ROLE_CUSTOMER } != null
 
+    val isStaff: Boolean
+        get() = STAFF_ROLES.any { role -> role in authorities.map { it.authority } }
+
     val isAdmin: Boolean
-        get() = authorities.firstOrNull { it.authority == ROLE_ADMIN || it.authority == ROLE_EDITOR } != null
+        get() = ADMIN_ROLES.any { role -> role in authorities.map { it.authority } }
 }

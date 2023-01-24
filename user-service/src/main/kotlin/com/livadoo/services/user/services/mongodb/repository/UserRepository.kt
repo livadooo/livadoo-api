@@ -15,19 +15,19 @@ interface UserRepository : ReactiveCrudRepository<UserEntity, String> {
     fun findByEmailIgnoreCase(email: String): Mono<UserEntity>
 
     @Query(SEARCH_USERS)
-    fun findUsersByAuthorityAndFirstNameOrLastnameOrEmailOrPhoneNumber(
-        authority: String,
+    fun findUsersByAuthoritiesAndFirstNameOrLastnameOrEmailOrPhoneNumber(
+        authorities: List<String>,
         query: String,
         pageable: Pageable
     ): Flux<UserEntity>
 
     @Query(SEARCH_USERS, count = true)
-    fun countUsersByAuthorityAndFirstNameOrLastnameOrEmailOrPhoneNumber(
-        authority: String,
+    fun countUsersByAuthoritiesAndFirstNameOrLastnameOrEmailOrPhoneNumber(
+        authorities: List<String>,
         query: String
     ): Mono<Long>
 
     fun findAllByIdIn(id: List<String>): Flux<UserEntity>
 }
 
-private const val SEARCH_USERS = "{\$and: [{authority: ?0}, {\$or: [{firstName : {\$regex : ?1, \$options : i }}, {lastName : {\$regex : ?1, \$options : i }}, {email : {\$regex : ?1, \$options : i }}, {phoneNumber : {\$regex : ?1 }}]}]}"
+private const val SEARCH_USERS = "{\$and: [{authority: {\$in: ?0}}, {\$or: [{firstName : {\$regex : ?1, \$options : i }}, {lastName : {\$regex : ?1, \$options : i }}, {email : {\$regex : ?1, \$options : i }}, {phoneNumber : {\$regex : ?1 }}]}]}"

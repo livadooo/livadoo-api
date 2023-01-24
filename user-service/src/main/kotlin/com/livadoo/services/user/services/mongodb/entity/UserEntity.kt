@@ -13,7 +13,7 @@ data class UserEntity(
     var lastName: String,
     @Indexed(unique = true)
     var phoneNumber: String,
-    val authority: String,
+    var authority: String,
     var password: String,
     @Indexed(unique = true)
     var email: String,

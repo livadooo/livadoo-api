@@ -3,6 +3,7 @@ package com.livadoo.services.dbmigrations
 import com.livadoo.library.security.domain.ROLE_ADMIN
 import com.livadoo.library.security.domain.ROLE_CUSTOMER
 import com.livadoo.library.security.domain.ROLE_EDITOR
+import com.livadoo.library.security.domain.ROLE_SUPER_ADMIN
 import com.livadoo.services.user.services.mongodb.entity.AuthorityEntity
 import com.livadoo.services.user.services.mongodb.entity.UserEntity
 import com.livadoo.services.user.services.mongodb.repository.AuthorityRepository
@@ -19,6 +20,7 @@ class InitializeRolesChangeUnit {
     @Execution
     fun execution(authorityRepository: AuthorityRepository) {
         val authorityEntities = listOf(
+            AuthorityEntity(ROLE_SUPER_ADMIN),
             AuthorityEntity(ROLE_ADMIN),
             AuthorityEntity(ROLE_EDITOR),
             AuthorityEntity(ROLE_CUSTOMER)
@@ -38,35 +40,17 @@ class CreateDefaultAdminChangeUnit {
 
     @Execution
     fun execution(userRepository: UserRepository, passwordEncoder: PasswordEncoder) {
-        val adminUser = UserEntity(
+        val superAdminUser = UserEntity(
             firstName = "Super",
             lastName = "Admin",
             phoneNumber = "+237670000000",
-            authority = ROLE_ADMIN,
+            authority = ROLE_SUPER_ADMIN,
             password = passwordEncoder.encode("1234"),
             email = "admin@livadoo.com",
             verified = true
         )
-        val customerUser1 = UserEntity(
-            firstName = "John",
-            lastName = "Doe",
-            phoneNumber = "+237670000001",
-            authority = ROLE_CUSTOMER,
-            password = passwordEncoder.encode("1234"),
-            email = "customer1@livadoo.com",
-            verified = true
-        )
-        val customerUser2 = UserEntity(
-            firstName = "Jane",
-            lastName = "Doe",
-            phoneNumber = "+237670000002",
-            authority = ROLE_CUSTOMER,
-            password = passwordEncoder.encode("1234"),
-            email = "customer2@livadoo.com",
-            verified = true
-        )
         val subscriberSync = MongoSubscriberSync<UserEntity>()
-        userRepository.saveAll(listOf(adminUser, customerUser1, customerUser2)).subscribe(subscriberSync)
+        userRepository.save(superAdminUser).subscribe(subscriberSync)
         subscriberSync.await()
     }
 
