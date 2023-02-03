@@ -23,4 +23,4 @@ data class CategoryEntity(
     var version: Int = 0
 )
 
-fun CategoryEntity.toDto(): Category = Category(name, description, parentId, pictureUrl, active, id!!)
+fun CategoryEntity.toDto(): Category = Category(name, description, parentId, null, pictureUrl, active, id!!, createdAt, updatedAt)
