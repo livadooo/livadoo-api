@@ -13,14 +13,18 @@ import com.livadoo.services.inventory.services.CategoryService
 import com.livadoo.services.inventory.services.mongodb.entity.CategoryEntity
 import com.livadoo.services.inventory.services.mongodb.entity.toDto
 import com.livadoo.services.inventory.services.mongodb.repository.CategoryRepository
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.asFlow
+
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
+import java.time.Instant
+import kotlin.collections.HashSet
 
 @Service
 class MongoCategoryService @Autowired constructor(
@@ -53,9 +57,10 @@ class MongoCategoryService @Autowired constructor(
                 ?.apply {
                     this.name = name
                     this.description = description
-                    this.parentId = categoryId
                     this.active = active
                     this.parentId = parentId
+                    updatedAt = Instant.now()
+                    updatedBy = currentUser.username
                 }
                 ?: throw CategoryNotFoundException(categoryId)
 
@@ -65,7 +70,7 @@ class MongoCategoryService @Autowired constructor(
         }
     }
 
-    override suspend fun updateCategoryImage(categoryId: String, filePart: FilePart): String {
+    override suspend fun updateCategoryPicture(categoryId: String, filePart: FilePart): String {
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isStaff) {
@@ -81,8 +86,16 @@ class MongoCategoryService @Autowired constructor(
     }
 
     override suspend fun getCategory(categoryId: String): Category {
-        return categoryRepository.findById(categoryId).map { it.toDto() }.awaitSingleOrNull()
+        val category = categoryRepository.findById(categoryId).map { it.toDto() }.awaitSingleOrNull()
             ?: throw CategoryNotFoundException(categoryId)
+
+        return category.apply {
+            parentId?.let {
+                val parent = categoryRepository.findById(parentId).awaitSingleOrNull()
+                    ?: throw CategoryNotFoundException(parentId)
+                parentName = parent.name
+            }
+        }
     }
 
     override suspend fun deleteCategory(categoryId: String) {
@@ -91,16 +104,37 @@ class MongoCategoryService @Autowired constructor(
             ?: throw CategoryNotFoundException(categoryId)
     }
 
-    override suspend fun getCategories(categoryParentId: String?, active: Boolean, pageable: Pageable): Pair<List<Category>, Long> {
-        val categories = categoryRepository
-            .findAllByParentIdAndActive(categoryParentId, active, pageable)
+    override suspend fun getCategories(pageable: Pageable, query: String): Page<Category> {
+        val categoriesTuple = categoryRepository
+            .findByNameLikeIgnoreCase(query, pageable)
             .map { it.toDto() }
-            .asFlow()
-            .toList()
+            .collectList()
+            .zipWith(categoryRepository.countByNameLikeIgnoreCase(query))
+            .awaitFirst()
+        val categories = categoriesTuple.t1
+        val categoriesCount = categoriesTuple.t2
 
-        val categoriesCount = categoryRepository.countAllByParentIdAndActive(categoryParentId, active).awaitSingle()
+        val parentCategoryIds = HashSet<String>()
 
-        return categories to categoriesCount
+        categories.mapNotNull { it.parentId }.forEach { parentCategoryIds.add(it) }
+
+        val parentCategories = if (parentCategoryIds.isNotEmpty()) {
+            categoryRepository.findAllById(parentCategoryIds).collectList().awaitFirst()
+        } else emptyList()
+
+        if (parentCategories.isNotEmpty()) {
+            categories.map { category ->
+                category.apply {
+                    parentName = parentId?.let {
+                        parentCategories.find { parent -> parent.id == category.parentId }?.name
+                            ?: throw CategoryNotFoundException(parentId)
+                    }
+                }
+            }
+        }
+
+        return PageImpl(categories, pageable, categoriesCount)
+
     }
 
     private suspend fun uploadCategoryImage(filePart: FilePart): String {
