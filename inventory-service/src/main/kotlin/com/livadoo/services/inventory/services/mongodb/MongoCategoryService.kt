@@ -132,9 +132,7 @@ class MongoCategoryService @Autowired constructor(
                 }
             }
         }
-
         return PageImpl(categories, pageable, categoriesCount)
-
     }
 
     private suspend fun uploadCategoryImage(filePart: FilePart): String {
