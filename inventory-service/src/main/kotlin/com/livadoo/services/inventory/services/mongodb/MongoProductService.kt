@@ -1,23 +1,28 @@
 package com.livadoo.services.inventory.services.mongodb
 
+import com.livadoo.library.security.utils.currentAuthUser
+import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.common.exceptions.NotAllowedException
 import com.livadoo.services.common.exceptions.NotAuthenticatedException
 import com.livadoo.services.common.utils.extractContent
-import com.livadoo.library.security.utils.currentAuthUser
-import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.inventory.data.Product
 import com.livadoo.services.inventory.data.ProductCreate
 import com.livadoo.services.inventory.data.ProductEdit
+import com.livadoo.services.inventory.exceptions.CategoryNotFoundException
 import com.livadoo.services.inventory.exceptions.ProductNotFoundException
 import com.livadoo.services.inventory.services.ProductService
 import com.livadoo.services.inventory.services.mongodb.entity.ProductEntity
 import com.livadoo.services.inventory.services.mongodb.entity.toDto
+import com.livadoo.services.inventory.services.mongodb.repository.CategoryRepository
 import com.livadoo.services.inventory.services.mongodb.repository.ProductRepository
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
@@ -25,6 +30,7 @@ import org.springframework.stereotype.Service
 @Service
 class MongoProductService @Autowired constructor(
     private val productRepository: ProductRepository,
+    private val categoryRepository: CategoryRepository,
     private val storageService: StorageServiceProxy,
 ) : ProductService {
 
@@ -34,7 +40,7 @@ class MongoProductService @Autowired constructor(
         return if (currentUser.isAdmin) {
             val coverPictureUrl = uploadProductImage(filePart)
             val (name, description, categoryId, quantity, price) = productCreate
-            val productEntity = ProductEntity(name, description, categoryId, quantity, price, coverPictureUrl, createdBy = currentUser.username)
+            val productEntity = ProductEntity(name, description, categoryId, quantity, price, true, coverPictureUrl, createdBy = currentUser.username)
 
             productRepository.save(productEntity).map { it.toDto() }.awaitSingle()
         } else {
@@ -46,16 +52,16 @@ class MongoProductService @Autowired constructor(
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
-            val (name, description, categoryId, currency, quantity, price, productId, discountPrice) = productEdit
+            val (name, description, categoryId, quantity, price, active, productId, discountPrice) = productEdit
 
             val productEntity = productRepository.findById(productId).awaitSingleOrNull()
                 ?.apply {
                     this.name = name
                     this.description = description
                     this.categoryId = categoryId
-                    this.currency = currency
                     this.quantity = quantity
                     this.price = price
+                    this.active = active
                     this.discountPrice = discountPrice
                 }
                 ?: throw ProductNotFoundException(productId)
@@ -66,7 +72,7 @@ class MongoProductService @Autowired constructor(
         }
     }
 
-    override suspend fun updateProductImage(productId: String, filePart: FilePart): String {
+    override suspend fun updateProductPicture(productId: String, filePart: FilePart): String {
         val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
 
         return if (currentUser.isAdmin) {
@@ -83,9 +89,13 @@ class MongoProductService @Autowired constructor(
     }
 
     override suspend fun getProduct(productId: String): Product {
-        return productRepository.findById(productId).map { it.toDto() }
+        val product = productRepository.findById(productId).map { it.toDto() }
             .awaitSingleOrNull()
             ?: throw ProductNotFoundException(productId)
+        val category = categoryRepository.findById(product.categoryId).awaitSingleOrNull()
+            ?: throw CategoryNotFoundException(product.categoryId)
+
+        return product.apply { categoryName = category.name }
     }
 
     override suspend fun deleteProduct(productId: String) {
@@ -120,6 +130,36 @@ class MongoProductService @Autowired constructor(
             .awaitSingle()
 
         return products to productCount
+    }
+
+    override suspend fun getProducts(pageable: Pageable, query: String): Page<Product> {
+        val productsTuple = productRepository
+            .findByNameLikeIgnoreCase(query, pageable)
+            .map { it.toDto() }
+            .collectList()
+            .zipWith(productRepository.countByNameLikeIgnoreCase(query))
+            .awaitFirst()
+
+        val products = productsTuple.t1
+        val productsCount = productsTuple.t2
+
+        val categoryIds = HashSet<String>()
+
+        products.mapNotNull { it.categoryId }.forEach { categoryIds.add(it) }
+
+        val categories = if (categoryIds.isNotEmpty()) {
+            categoryRepository.findAllById(categoryIds).collectList().awaitFirst()
+        } else emptyList()
+
+        if (categories.isNotEmpty()) {
+            products.map { product ->
+                product.apply {
+                    categoryName = categories.find { category -> category.id == product.categoryId }?.name
+                        ?: throw CategoryNotFoundException(product.categoryId)
+                }
+            }
+        }
+        return PageImpl(products, pageable, productsCount)
     }
 
     private suspend fun uploadProductImage(filePart: FilePart): String {

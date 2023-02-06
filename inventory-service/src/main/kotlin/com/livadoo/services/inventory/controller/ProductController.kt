@@ -6,9 +6,9 @@ import com.livadoo.services.inventory.data.ProductCreate
 import com.livadoo.services.inventory.data.ProductEdit
 import com.livadoo.services.inventory.services.ProductService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,10 +27,10 @@ class ProductController @Autowired constructor(
     private val productService: ProductService
 ) {
 
-    @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping
     suspend fun createProduct(
         @RequestPart("product") product: String,
-        @RequestPart("image") filePart: FilePart,
+        @RequestPart("picture") filePart: FilePart,
     ) {
         val productCreate = ObjectMapper().readValue(product, ProductCreate::class.java)
         productService.createProduct(productCreate, filePart)
@@ -41,12 +41,12 @@ class ProductController @Autowired constructor(
         productService.updateProduct(productEdit)
     }
 
-    @PutMapping("/{productId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    suspend fun updateProductImage(
+    @PutMapping("/{productId}/picture", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    suspend fun updateProductPicture(
         @PathVariable productId: String,
         @RequestPart("file") filePart: FilePart
     ): String {
-        return productService.updateProductImage(productId, filePart)
+        return productService.updateProductPicture(productId, filePart)
     }
 
     @GetMapping("/{productId}")
@@ -59,22 +59,16 @@ class ProductController @Autowired constructor(
         productService.deleteProduct(productId)
     }
 
-    @GetMapping("/category/{categoryId}")
-    suspend fun getProductsByCategory(
+    @GetMapping
+    suspend fun getProducts(
         @RequestParam("page", required = false) page: Int?,
         @RequestParam("size", required = false) size: Int?,
-        @RequestParam("active", required = false) active: Boolean?,
-        @RequestParam("query", required = false) query: String?,
-        @PathVariable categoryId: String
-    ): ResponseEntity<List<Product>> {
-        val pageable = PageRequest.of(page ?: 0, size ?: 100)
-        val (products, productsCount) = productService.getProductsByCategory(categoryId, active ?: true, query ?: "", pageable)
-        return ResponseEntity.ok()
-            .header("X-Total-Count", "$productsCount")
-            .body(products)
+        @RequestParam("q", required = false) query: String?,
+    ): Page<Product> {
+        val pageRequest = PageRequest.of(page ?: 0, size ?: 100)
+        return productService.getProducts(pageRequest, query ?: "")
     }
-
-    @GetMapping
+    /*@GetMapping
     suspend fun getProductsByName(
         @RequestParam("page", required = false) page: Int?,
         @RequestParam("size", required = false) size: Int?,
@@ -86,5 +80,5 @@ class ProductController @Autowired constructor(
         return ResponseEntity.ok()
             .header("X-Total-Count", "$productsCount")
             .body(products)
-    }
+    }*/
 }
