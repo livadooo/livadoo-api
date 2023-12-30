@@ -1,0 +1,46 @@
+[versions]
+jjwt = "0.12.3"
+kotlin = "1.9.21"
+kotlin-allopen = "1.9.22"
+spotless = "6.17.0"
+spring-boot = "3.2.1"
+spring-dependency-management = "1.1.4"
+
+[libraries]
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "spring-boot" }
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+kotest-assertions = { module = "io.kotest:kotest-assertions-core", version = "5.4.2" }
+kotlin-plugin-jvm = { module = "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "kotlin" }
+kotlin-plugin-allopen = { module = "org.jetbrains.kotlin.plugin.allopen:org.jetbrains.kotlin.plugin.allopen.gradle.plugin", version.ref = "kotlin-allopen" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version = "3.1.0" }
+mongock-bom = { module = "io.mongock:mongock-bom", version = "5.3.6" }
+mongock-springboot = { module = "io.mongock:mongock-springboot" }
+mongock-mongodb-reactive-driver = { module = "io.mongock:mongodb-reactive-driver" }
+spotless-plugin = { module = "com.diffplug.spotless:com.diffplug.spotless.gradle.plugin", version.ref = "spotless" }
+sendgrid-java = { module = "com.sendgrid:sendgrid-java", version = "4.9.3" }
+spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version = "2.7.5" }
+spring-boot-data-mongodb-reactive = { module = "org.springframework.boot:spring-boot-starter-data-mongodb-reactive", version.ref = "spring-boot" }
+spring-boot-mail = { module = "org.springframework.boot:spring-boot-starter-mail", version.ref = "spring-boot" }
+spring-boot-plugin = { module = "org.springframework.boot:org.springframework.boot.gradle.plugin", version.ref = "spring-boot" }
+spring-boot-plugin-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
+spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "spring-boot" }
+spring-boot-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring-boot" }
+spring-boot-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf", version.ref = "spring-boot" }
+spring-boot-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "spring-boot" }
+spring-data-commons = { module = "org.springframework.data:spring-data-commons", version.ref = "spring-boot" }
+spring-dependency-management-plugin = { module = "io.spring.dependency-management:io.spring.dependency-management.gradle.plugin", version.ref = "spring-dependency-management" }
+spring-security-test = { module = "org.springframework.security:spring-security-test", version = "5.7.5" }
+springfox-boot = { module = "io.springfox:springfox-boot-starter", version = "3.0.0" }
+error-handling = { module = "io.github.wimdeblauwe:error-handling-spring-boot-starter", version = "4.2.0" }
+
+[plugins]
+jib = { id = "com.google.cloud.tools.jib", version = "3.3.2" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-plugin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" } # Equivalent kotlin("plugin.spring")
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }

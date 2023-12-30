@@ -1,9 +1,9 @@
 plugins {
     id("com.livadoo.kotlin-conventions")
-    id("org.springframework.boot") apply false
-    id("io.spring.dependency-management")
-    kotlin("jvm")
-    kotlin("plugin.spring")
+    alias(libs.plugins.spring.boot) apply false
+    alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.plugin.spring)
 }
 
 group = "com.livadoo.library"
@@ -16,11 +16,11 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("io.jsonwebtoken:jjwt-api:0.11.1")
-    implementation("io.jsonwebtoken:jjwt-impl:0.11.1")
-    implementation("io.jsonwebtoken:jjwt-jackson:0.11.1")
+    implementation(libs.jjwt.api)
+    implementation(libs.jjwt.impl)
+    implementation(libs.jjwt.jackson)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.spring.boot.security)
+    implementation(libs.spring.boot.webflux)
 }
