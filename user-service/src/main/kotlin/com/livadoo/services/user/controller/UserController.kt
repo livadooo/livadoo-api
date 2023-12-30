@@ -1,15 +1,10 @@
 package com.livadoo.services.user.controller
 
-import com.livadoo.services.user.data.CustomerUserCreate
-import com.livadoo.services.user.data.PasswordUpdate
-import com.livadoo.services.user.data.StaffUserCreate
-import com.livadoo.services.user.data.User
-import com.livadoo.services.user.data.UserUpdate
+import com.livadoo.services.user.data.*
 import com.livadoo.services.user.security.AuthUserDTO
 import com.livadoo.services.user.services.AccountService
 import com.livadoo.services.user.services.UserService
 import jakarta.validation.Valid
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.codec.multipart.FilePart
@@ -18,7 +13,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/v1/users")
-class UserController @Autowired constructor(
+class UserController(
     private val userService: UserService,
     private val accountService: AccountService
 ) {

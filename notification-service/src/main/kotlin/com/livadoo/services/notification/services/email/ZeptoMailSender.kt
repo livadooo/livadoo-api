@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 
 @Service("zeptoMailSender")
-class ZeptoMailSender constructor(
+class ZeptoMailSender(
     @Qualifier("zeptoMailWebClient") private val zeptoMailWebClient: WebClient,
     private val zeptoMailProperties: ZeptoMailProperties,
 ) : EmailSender {

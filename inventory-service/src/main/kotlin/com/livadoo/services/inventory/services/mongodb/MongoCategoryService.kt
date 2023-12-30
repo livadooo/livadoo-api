@@ -1,10 +1,10 @@
 package com.livadoo.services.inventory.services.mongodb
 
+import com.livadoo.library.security.utils.currentAuthUser
+import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.common.exceptions.NotAllowedException
 import com.livadoo.services.common.exceptions.NotAuthenticatedException
 import com.livadoo.services.common.utils.extractContent
-import com.livadoo.library.security.utils.currentAuthUser
-import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.inventory.data.Category
 import com.livadoo.services.inventory.data.CategoryCreate
 import com.livadoo.services.inventory.data.CategoryEdit
@@ -13,21 +13,18 @@ import com.livadoo.services.inventory.services.CategoryService
 import com.livadoo.services.inventory.services.mongodb.entity.CategoryEntity
 import com.livadoo.services.inventory.services.mongodb.entity.toDto
 import com.livadoo.services.inventory.services.mongodb.repository.CategoryRepository
-
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
 import java.time.Instant
-import kotlin.collections.HashSet
 
 @Service
-class MongoCategoryService @Autowired constructor(
+class MongoCategoryService(
     private val categoryRepository: CategoryRepository,
     private val storageService: StorageServiceProxy,
 ) : CategoryService {

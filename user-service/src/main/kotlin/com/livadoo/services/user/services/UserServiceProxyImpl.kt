@@ -2,12 +2,11 @@ package com.livadoo.services.user.services
 
 import com.livadoo.proxy.user.UserServiceProxy
 import com.livadoo.proxy.user.model.User
-import com.livadoo.services.user.data.User as InternalUser
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import com.livadoo.services.user.data.User as InternalUser
 
 @Service
-class UserServiceProxyImpl @Autowired constructor(
+class UserServiceProxyImpl(
     private val userService: UserService
 ) : UserServiceProxy {
 

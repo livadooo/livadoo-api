@@ -10,7 +10,6 @@ import com.livadoo.services.storage.services.mongodb.entity.toDto
 import com.livadoo.services.storage.services.mongodb.repository.DocumentRepository
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -19,7 +18,7 @@ import javax.annotation.PostConstruct
 
 @Profile("default", "local")
 @Service
-class MongoStorageService @Autowired constructor(
+class MongoStorageService(
     private val documentRepository: DocumentRepository,
     private val fileStorageService: FileStorageService,
     private val properties: LivadooProperties,

@@ -3,7 +3,6 @@ package com.livadoo.services.storage.services
 import com.livadoo.services.storage.config.LivadooProperties
 import com.livadoo.services.storage.exceptions.FileNotFoundException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.io.File
 import java.nio.file.Files
@@ -20,7 +19,7 @@ interface FileStorageService {
 }
 
 @Service
-class LocalFileStorageService @Autowired constructor(
+class LocalFileStorageService(
     properties: LivadooProperties
 ) : FileStorageService {
     private val logger = LoggerFactory.getLogger(LocalFileStorageService::class.java)

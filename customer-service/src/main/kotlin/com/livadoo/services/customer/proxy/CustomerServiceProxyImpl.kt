@@ -2,13 +2,12 @@ package com.livadoo.services.customer.proxy
 
 import com.livadoo.proxy.customer.CustomerServiceProxy
 import com.livadoo.proxy.customer.model.CustomerCreate
-import com.livadoo.services.customer.data.CustomerCreate as InternalCustomerCreate
 import com.livadoo.services.customer.services.CustomerService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import com.livadoo.services.customer.data.CustomerCreate as InternalCustomerCreate
 
 @Service
-class CustomerServiceProxyImpl @Autowired constructor(
+class CustomerServiceProxyImpl(
     private val customerService: CustomerService
 ) : CustomerServiceProxy {
 

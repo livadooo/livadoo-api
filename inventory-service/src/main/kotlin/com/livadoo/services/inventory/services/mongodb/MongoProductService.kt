@@ -20,7 +20,6 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -28,7 +27,7 @@ import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
 
 @Service
-class MongoProductService @Autowired constructor(
+class MongoProductService(
     private val productRepository: ProductRepository,
     private val categoryRepository: CategoryRepository,
     private val storageService: StorageServiceProxy,

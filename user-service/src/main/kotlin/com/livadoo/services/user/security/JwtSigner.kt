@@ -18,7 +18,7 @@ private const val AUTHORITIES_KEY = "roles"
 private const val AUTHORITIES_DELIMITER = ","
 
 @Service
-class JwtSigner constructor(
+class JwtSigner(
     private val securityProperties: SecurityProperties
 ) {
 

@@ -3,20 +3,19 @@ package com.livadoo.services.notification.proxy
 import com.livadoo.proxy.notification.NotificationServiceProxy
 import com.livadoo.proxy.notification.model.AccountCreateConfirmation
 import com.livadoo.proxy.notification.model.CustomerAccount
-import com.livadoo.proxy.notification.model.PasswordResetRequest
 import com.livadoo.proxy.notification.model.PasswordResetConfirmation
+import com.livadoo.proxy.notification.model.PasswordResetRequest
 import com.livadoo.proxy.notification.model.StaffAccount
 import com.livadoo.services.notification.services.MailService
-import org.springframework.beans.factory.annotation.Autowired
-import com.livadoo.services.notification.data.StaffAccount as InternalStaffAccount
-import com.livadoo.services.notification.data.CustomerAccount as InternalCustomerAccount
+import org.springframework.stereotype.Service
 import com.livadoo.services.notification.data.AccountCreateConfirmation as InternalAccountCreateConfirmation
+import com.livadoo.services.notification.data.CustomerAccount as InternalCustomerAccount
 import com.livadoo.services.notification.data.PasswordResetConfirmation as InternalPasswordResetConfirmation
 import com.livadoo.services.notification.data.PasswordResetRequest as InternalPasswordResetRequest
-import org.springframework.stereotype.Service
+import com.livadoo.services.notification.data.StaffAccount as InternalStaffAccount
 
 @Service
-class NotificationServiceProxyImpl @Autowired constructor(
+class NotificationServiceProxyImpl(
     private val mailService: MailService
 ) : NotificationServiceProxy {
 
