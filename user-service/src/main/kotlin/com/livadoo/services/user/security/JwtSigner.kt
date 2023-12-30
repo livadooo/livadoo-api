@@ -28,7 +28,7 @@ class JwtSigner constructor(
         val authUser = (authentication.principal as AuthUser)
         val authorities = authUser.authorities.joinToString(AUTHORITIES_DELIMITER) { it.authority }
 
-        val tokenValidityInMilliSeconds = securityProperties.jwt.tokenValidityInSeconds * 1000
+        val tokenValidityInMilliSeconds = securityProperties.tokenValidityInSeconds * 1000
         val validity = Date(System.currentTimeMillis() + tokenValidityInMilliSeconds)
 
         return Jwts.builder()
@@ -43,7 +43,7 @@ class JwtSigner constructor(
     fun createRefreshToken(authentication: Authentication): String {
         val authUser = (authentication.principal as AuthUser)
 
-        val tokenValidityInMilliSeconds = securityProperties.jwt.refreshTokenValidityInSeconds * 1000
+        val tokenValidityInMilliSeconds = securityProperties.refreshTokenValidityInSeconds * 1000
         val validity = Date(System.currentTimeMillis() + tokenValidityInMilliSeconds)
 
         return Jwts.builder()
@@ -67,13 +67,13 @@ class JwtSigner constructor(
 
     private val accessTokenKey: SecretKey
         get() {
-            val secret = securityProperties.jwt.secret
+            val secret = securityProperties.secret
             return hmacShaKeyFor(secret.toByteArray())
         }
 
     private val refreshTokenKey: SecretKey
         get() {
-            val secret = securityProperties.jwt.refreshSecret
+            val secret = securityProperties.refreshSecret
             return hmacShaKeyFor(secret.toByteArray())
         }
 }

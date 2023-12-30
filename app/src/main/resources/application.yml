@@ -1,0 +1,82 @@
+livadoo:
+  jwt.security:
+    secret: UyK+f$pD+1X@<boXLfJwm_qXx2=z{]o&9S<w=|z^f;sD%73qBL&RYw;v2Zm`-%%
+    refresh-secret: <s1_>VS9C4/XtpVmxItC6D!{lA_uWHqk+IT=b0*iqCfiynY_06{>`<KIb%=p_UY
+    token-validity-in-seconds: 2592000
+    refresh-token-validity-in-seconds: 3888000
+    staff-token-validity-in-seconds: 5400
+    staff-refresh-token-validity-in-seconds: 604800
+
+  storage:
+    google-cloud:
+      public-bucket: bucket-name
+      old-bucket: bucket-name
+      new-bucket: bucket-name
+      patch-bucket: false
+
+    local:
+      base-url: url
+      old-bucket: bucket-name
+      new-bucket: bucket-name
+      patch-bucket: false
+      path: path
+
+  password-reset-key:
+    validity-time-in-hours: 24
+
+
+spring:
+  data:
+    mongodb:
+      database: livadoo_db
+      uri: mongodb://localhost:27017/
+      auto-index-creation: true
+
+  web:
+    resources:
+      add-mappings: false
+
+  mail:
+    host: # smtp host
+    port: 587
+    username: # sender username
+    password: # sender password
+    properties:
+      mail:
+        smtp:
+          ssl.trust: # trustee
+
+
+notification:
+  zeptomail:
+    api-url:
+    authorization-header:
+    bounce-address:
+
+
+error:
+  handling:
+    exception-logging: message_only
+    http-statuses:
+      java:
+        lang:
+          RuntimeException: bad_request
+    search-super-class-hierarchy: true
+
+
+management:
+  health:
+    mail:
+      enabled: false
+
+
+server:
+  port: 9000
+  servlet:
+    encoding:
+      force: true
+
+
+logging:
+  level:
+    com.livadoo.services: DEBUG

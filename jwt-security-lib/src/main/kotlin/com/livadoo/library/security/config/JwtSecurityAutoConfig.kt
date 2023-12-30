@@ -11,11 +11,11 @@ class JwtSecurityAutoConfig @Autowired constructor(
 ) {
 
     init {
-        if (securityProperties.jwt.secret.isBlank()) {
+        if (securityProperties.secret.isBlank()) {
             throw IllegalArgumentException("Invalid secret key for JWT")
         }
     }
 
     @Bean
-    fun jwtValidator(): JwtValidator = JwtValidator(securityProperties.jwt.secret)
+    fun jwtValidator(): JwtValidator = JwtValidator(securityProperties.secret)
 }
