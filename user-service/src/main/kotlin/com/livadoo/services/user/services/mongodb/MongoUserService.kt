@@ -51,7 +51,6 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -66,7 +65,7 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 @Service
-class MongoUserService @Autowired constructor(
+class MongoUserService(
     private val userRepository: UserRepository,
     private val authorityRepository: AuthorityRepository,
     private val notificationService: NotificationServiceProxy,

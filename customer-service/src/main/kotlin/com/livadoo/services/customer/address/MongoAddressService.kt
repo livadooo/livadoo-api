@@ -1,7 +1,7 @@
 package com.livadoo.services.customer.address
 
-import com.livadoo.services.common.exceptions.NotAuthenticatedException
 import com.livadoo.library.security.utils.currentUserId
+import com.livadoo.services.common.exceptions.NotAuthenticatedException
 import com.livadoo.services.customer.address.data.Address
 import com.livadoo.services.customer.address.data.AddressCreate
 import com.livadoo.services.customer.address.data.AddressEdit
@@ -12,12 +12,11 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.Instant
 
 @Service
-class MongoAddressService @Autowired constructor(
+class MongoAddressService(
     private val addressRepository: AddressRepository,
     private val customerRepository: CustomerRepository
 ) : AddressService {

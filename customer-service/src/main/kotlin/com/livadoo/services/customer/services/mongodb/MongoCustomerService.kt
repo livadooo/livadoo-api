@@ -12,11 +12,10 @@ import com.livadoo.services.customer.services.mongodb.repository.CustomerReposit
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class MongoCustomerService @Autowired constructor(
+class MongoCustomerService(
     private val customerRepository: CustomerRepository
 ): CustomerService {
 

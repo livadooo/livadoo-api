@@ -6,14 +6,13 @@ import com.google.cloud.storage.Storage
 import com.livadoo.services.storage.config.LivadooProperties
 import com.livadoo.services.storage.data.Document
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Profile("prod", "uat")
 @Service
-class GoogleCloudFileStorageService @Autowired constructor(
+class GoogleCloudFileStorageService(
     private val properties: LivadooProperties,
     private val storage: Storage,
 ) : StorageService {

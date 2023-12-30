@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
 private const val AUTHORIZATION_HEADER = "Authorization"
 private const val AUTH_TOKEN_PREFIX = "Bearer "
 
-class JwtFilter constructor(
+class JwtFilter(
     private val jwtSigner: JwtValidator
 ) : WebFilter {
 

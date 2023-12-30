@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 
 @Service("smtpSender")
-class SmtpEmailSender constructor(
+class SmtpEmailSender(
     private val javaMailSender: JavaMailSender
 ) : EmailSender {
 

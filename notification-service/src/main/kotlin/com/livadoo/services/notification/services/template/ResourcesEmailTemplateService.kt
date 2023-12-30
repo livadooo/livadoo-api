@@ -1,18 +1,13 @@
 package com.livadoo.services.notification.services.template
 
-import com.livadoo.services.notification.data.AccountCreateConfirmation
-import com.livadoo.services.notification.data.CustomerAccount
-import com.livadoo.services.notification.data.PasswordResetRequest
-import com.livadoo.services.notification.data.PasswordResetConfirmation
-import com.livadoo.services.notification.data.StaffAccount
+import com.livadoo.services.notification.data.*
 import com.livadoo.services.notification.services.EmailTemplateService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.context.Context
 
 @Service
-class ResourcesEmailTemplateService @Autowired constructor(
+class ResourcesEmailTemplateService(
     private val templateEngine: ITemplateEngine
 ) : EmailTemplateService {
 

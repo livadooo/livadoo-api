@@ -1,11 +1,11 @@
 package com.livadoo.services.user.services.mongodb
 
-import com.livadoo.services.common.exceptions.NotAuthenticatedException
 import com.livadoo.library.security.domain.AuthUser
 import com.livadoo.library.security.domain.SYSTEM_ACCOUNT
 import com.livadoo.library.security.utils.currentUserId
 import com.livadoo.proxy.notification.NotificationServiceProxy
 import com.livadoo.proxy.notification.model.PasswordResetRequest
+import com.livadoo.services.common.exceptions.NotAuthenticatedException
 import com.livadoo.services.user.config.PasswordResetKeyProperties
 import com.livadoo.services.user.data.PasswordReset
 import com.livadoo.services.user.data.User
@@ -31,7 +31,6 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -46,7 +45,7 @@ import kotlin.random.nextInt
 import com.livadoo.services.user.data.PasswordResetRequest as InternalPasswordResetRequest
 
 @Service
-class MongoAccountService @Autowired constructor(
+class MongoAccountService(
     private val userRepository: UserRepository,
     private val authenticationManager: ReactiveAuthenticationManager,
     private val jwtSigner: JwtSigner,

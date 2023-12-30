@@ -1,13 +1,12 @@
 package com.livadoo.services.notification.config
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
 @Component
-class SmsWebClientsConfig @Autowired constructor(
+class SmsWebClientsConfig(
     private val webClientBuilder: WebClient.Builder,
     private val zeptoMailProperties: ZeptoMailProperties
 ) {

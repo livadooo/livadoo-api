@@ -2,7 +2,6 @@ package com.livadoo.services.config
 
 import com.livadoo.library.security.jwt.JwtFilter
 import com.livadoo.library.security.jwt.JwtValidator
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -25,7 +24,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
-class SecurityConfig @Autowired constructor(
+class SecurityConfig(
     private val userDetailsService: ReactiveUserDetailsService,
     private val jwtValidator: JwtValidator
 ) {

@@ -8,7 +8,6 @@ import com.livadoo.services.user.services.mongodb.entity.UserEntity
 import com.livadoo.services.user.services.mongodb.repository.UserRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
@@ -18,7 +17,7 @@ import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 
 @Component("userDetailsService")
-class UserDetailsService @Autowired constructor(
+class UserDetailsService(
     private val userRepository: UserRepository
 ) : ReactiveUserDetailsService {
 

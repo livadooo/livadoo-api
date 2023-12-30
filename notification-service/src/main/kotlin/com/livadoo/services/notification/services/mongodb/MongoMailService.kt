@@ -1,17 +1,7 @@
 package com.livadoo.services.notification.services.mongodb
 
-import com.livadoo.services.notification.data.AccountCreateConfirmation
-import com.livadoo.services.notification.data.CustomerAccount
-import com.livadoo.services.notification.data.DeliveryStatus
-import com.livadoo.services.notification.data.EmailType
-import com.livadoo.services.notification.data.EmailType.STAFF_ACCOUNT_CREATE_CONFIRMATION
-import com.livadoo.services.notification.data.EmailType.CUSTOMER_ACCOUNT_VERIFICATION
-import com.livadoo.services.notification.data.EmailType.CUSTOMER_ACCOUNT_CREATE_CONFIRMATION
-import com.livadoo.services.notification.data.EmailType.PASSWORD_RESET_REQUEST
-import com.livadoo.services.notification.data.EmailType.PASSWORD_RESET_CONFIRMATION
-import com.livadoo.services.notification.data.PasswordResetRequest
-import com.livadoo.services.notification.data.PasswordResetConfirmation
-import com.livadoo.services.notification.data.StaffAccount
+import com.livadoo.services.notification.data.*
+import com.livadoo.services.notification.data.EmailType.*
 import com.livadoo.services.notification.services.EmailSender
 import com.livadoo.services.notification.services.EmailTemplateService
 import com.livadoo.services.notification.services.MailService
@@ -19,13 +9,12 @@ import com.livadoo.services.notification.services.mongodb.entity.EmailEntity
 import com.livadoo.services.notification.services.mongodb.repository.EmailRepository
 import kotlinx.coroutines.reactor.awaitSingle
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class MongoMailService @Autowired constructor(
+class MongoMailService(
     private val emailRepository: EmailRepository,
     @Qualifier("zeptoMailSender") private val emailSender: EmailSender,
     private val emailTemplateService: EmailTemplateService
