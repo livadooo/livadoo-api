@@ -12,7 +12,7 @@ data class User(
     var lastName: String,
     var phoneNumber: String,
     @field:NotEmpty(message = "MISSING_AUTHORITY")
-    var authorities: List<String>,
+    var authority: String,
     @field:Email(
         message = "INVALID_EMAIL_ADDRESS", regexp =
         "^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]|[\\w-]{2,}))@"
@@ -23,7 +23,7 @@ data class User(
                 + "([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$"
     )
     var email: String,
-    var avatarId: String? = null,
+    var portraitUrl: String? = null,
     var address: String? = null,
     var city: String? = null,
     var country: String? = null,

@@ -1,9 +1,16 @@
 rootProject.name = "livadoo-api"
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+pluginManagement {
+    includeBuild("build-logic")
+}
+
 include(
-    "core",
+    "app",
     "jwt-security-lib",
     "user-service",
+    "user-service-proxy",
     "common",
     "notification-service",
     "inventory-service",

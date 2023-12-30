@@ -10,5 +10,9 @@ interface CategoryRepository : ReactiveCrudRepository<CategoryEntity, String> {
 
     fun findAllByParentIdAndActive(parentId: String?, active: Boolean, pageable: Pageable): Flux<CategoryEntity>
 
+    fun findByNameLikeIgnoreCase(query: String, pageable: Pageable): Flux<CategoryEntity>
+
+    fun countByNameLikeIgnoreCase(query: String): Mono<Long>
+
     fun countAllByParentIdAndActive(parentId: String?, active: Boolean): Mono<Long>
 }

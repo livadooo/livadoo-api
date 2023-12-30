@@ -1,11 +1,13 @@
 package com.livadoo.services.user.services.mongodb
 
-import com.livadoo.common.exceptions.NotAllowedException
-import com.livadoo.common.utils.extractContent
+import com.livadoo.library.security.domain.ADMIN_ROLES
 import com.livadoo.library.security.domain.ROLE_ADMIN
 import com.livadoo.library.security.domain.ROLE_CUSTOMER
 import com.livadoo.library.security.domain.ROLE_EDITOR
+import com.livadoo.library.security.domain.ROLE_SUPER_ADMIN
+import com.livadoo.library.security.domain.STAFF_ROLES
 import com.livadoo.library.security.domain.SYSTEM_ACCOUNT
+import com.livadoo.library.security.utils.currentAuthUser
 import com.livadoo.library.security.utils.currentUserId
 import com.livadoo.library.security.utils.hasCurrentUserThisAuthority
 import com.livadoo.proxy.customer.CustomerServiceProxy
@@ -14,21 +16,24 @@ import com.livadoo.proxy.notification.NotificationServiceProxy
 import com.livadoo.proxy.notification.model.CustomerAccount
 import com.livadoo.proxy.notification.model.StaffAccount
 import com.livadoo.proxy.storage.StorageServiceProxy
+import com.livadoo.services.common.utils.extractContent
 import com.livadoo.services.user.config.PasswordResetKeyProperties
 import com.livadoo.services.user.data.CustomerUserCreate
 import com.livadoo.services.user.data.PasswordUpdate
 import com.livadoo.services.user.data.StaffUserCreate
 import com.livadoo.services.user.data.User
 import com.livadoo.services.user.data.UserUpdate
-import com.livadoo.services.user.exceptions.BadAuthorityException
+import com.livadoo.services.user.exceptions.AuthorityNotFoundException
+import com.livadoo.services.user.exceptions.NotAllowedToCreateUserException
+import com.livadoo.services.user.exceptions.NotAllowedToEditUserException
 import com.livadoo.services.user.exceptions.SecureKeyExpiredException
 import com.livadoo.services.user.exceptions.SimilarPasswordException
 import com.livadoo.services.user.exceptions.UserEmailTakenException
-import com.livadoo.services.user.exceptions.UserWithIdNotFoundException
+import com.livadoo.services.user.exceptions.UserNotFoundException
 import com.livadoo.services.user.exceptions.UserPhoneTakenException
 import com.livadoo.services.user.exceptions.WrongPasswordException
+import com.livadoo.services.user.extensions.saveOrUpdate
 import com.livadoo.services.user.services.UserService
-import com.livadoo.services.user.services.mongodb.entity.AuthorityEntity
 import com.livadoo.services.user.services.mongodb.entity.KeyType
 import com.livadoo.services.user.services.mongodb.entity.SecureKeyEntity
 import com.livadoo.services.user.services.mongodb.entity.UserEntity
@@ -36,10 +41,10 @@ import com.livadoo.services.user.services.mongodb.entity.toDto
 import com.livadoo.services.user.services.mongodb.repository.AuthorityRepository
 import com.livadoo.services.user.services.mongodb.repository.SecureKeyRepository
 import com.livadoo.services.user.services.mongodb.repository.UserRepository
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrDefault
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
@@ -47,8 +52,9 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.dao.DuplicateKeyException
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -68,49 +74,34 @@ class MongoUserService @Autowired constructor(
     private val passwordResetKeyProperties: PasswordResetKeyProperties,
     private val secureKeyRepository: SecureKeyRepository,
     private val storageService: StorageServiceProxy,
-    private val customerService: CustomerServiceProxy
+    private val customerService: CustomerServiceProxy,
 ) : UserService {
 
     private val logger = LoggerFactory.getLogger(MongoUserService::class.java)
 
     override suspend fun createCustomerUser(customerUserCreate: CustomerUserCreate) {
-        val isCurrentUserAdmin = hasCurrentUserThisAuthority(ROLE_ADMIN).awaitFirstOrDefault(false)
-        val isCurrentUserEditor = hasCurrentUserThisAuthority(ROLE_EDITOR).awaitFirstOrDefault(false)
         val isCurrentUserCustomer = hasCurrentUserThisAuthority(ROLE_CUSTOMER).awaitFirstOrDefault(false)
-        val hasAdminRole = isCurrentUserEditor || isCurrentUserAdmin
+        val isCurrentUserStaff = currentAuthUser.awaitFirstOrNull()?.isStaff ?: false
 
-        if (isCurrentUserCustomer) {
-            throw NotAllowedException("You are not allowed to create a customer.")
-        }
+        if (isCurrentUserCustomer) throw NotAllowedToCreateUserException()
 
-        userRepository.findByEmailIgnoreCase(customerUserCreate.email).awaitSingleOrNull()
-            ?.also { user ->
-                if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserEmailTakenException(customerUserCreate.email)
-            }
-
-        userRepository
-            .findByPhoneNumber(customerUserCreate.phoneNumber).awaitSingleOrNull()
-            ?.also { user ->
-                if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserPhoneTakenException(customerUserCreate.phoneNumber)
-            }
+        checkEmailAndPassword(customerUserCreate.email, customerUserCreate.phoneNumber)
 
         val entity = UserEntity(
             customerUserCreate.firstName,
             customerUserCreate.lastName,
             customerUserCreate.phoneNumber,
-            listOf(AuthorityEntity(ROLE_CUSTOMER)),
+            ROLE_CUSTOMER,
             passwordEncoder.encode(customerUserCreate.password),
             customerUserCreate.email,
             null,
-            verified = hasAdminRole,
+            verified = isCurrentUserStaff,
             createdBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT),
             createdAt = Instant.now()
         )
 
         val user = userRepository.save(entity).awaitSingle().toDto()
-        if (hasAdminRole) {
+        if (isCurrentUserStaff) {
             mono {
                 val customerCreate = CustomerCreate(user.userId!!)
                 customerService.createCustomer(customerCreate).also { logger.info("Successfully created customer account") }
@@ -119,18 +110,15 @@ class MongoUserService @Autowired constructor(
             }
         } else {
             val userId = user.userId!!
-            val email = user.email
-
             val key = Random.nextInt(IntRange(100000, 999999)).toString()
             val keyValidityTime = passwordResetKeyProperties.validityTimeInHours
             val expiresAt = Instant.now().plus(keyValidityTime.toLong(), ChronoUnit.HOURS)
 
-            val keyEntity = SecureKeyEntity(key, userId, KeyType.ACCOUNT_VERIFY, expiresAt, Instant.now(), Instant.now())
-
-            saveSecureKey(keyEntity, userId, key, expiresAt)
+            val verificationKeyEntity = SecureKeyEntity(key, userId, KeyType.ACCOUNT_VERIFY, expiresAt, Instant.now(), Instant.now())
+            verificationKeyEntity.saveOrUpdate(secureKeyRepository, userId, key, expiresAt)
 
             mono {
-                val credentials = CustomerAccount(userId, email, key)
+                val credentials = CustomerAccount(userId, user.email, key)
                 notificationService.sendCustomerAccountVerificationEmail(credentials).also { logger.info(it) }
             }.subscribe(null) { error ->
                 logger.error("An error occurred while sending customer account verification email ---> $error")
@@ -141,37 +129,26 @@ class MongoUserService @Autowired constructor(
     }
 
     override suspend fun createStaffUser(staffUserCreate: StaffUserCreate) {
+        val isCurrentUserSuperAdmin = hasCurrentUserThisAuthority(ROLE_SUPER_ADMIN).awaitFirstOrDefault(false)
         val isCurrentUserAdmin = hasCurrentUserThisAuthority(ROLE_ADMIN).awaitFirstOrDefault(false)
 
-        if (!isCurrentUserAdmin) {
-            throw NotAllowedException("You are not allowed to create an administrator.")
-        }
+        val isGranted = (isCurrentUserAdmin && staffUserCreate.authority == ROLE_EDITOR) ||
+                (isCurrentUserSuperAdmin && staffUserCreate.authority == ROLE_ADMIN)
 
-        userRepository
-            .findByEmailIgnoreCase(staffUserCreate.email).awaitSingleOrNull()
-            ?.also { user ->
-                if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserEmailTakenException(staffUserCreate.email)
-            }
+        if (!isGranted) throw NotAllowedToCreateUserException()
 
-        userRepository
-            .findByPhoneNumber(staffUserCreate.phoneNumber).awaitSingleOrNull()
-            ?.also { user ->
-                if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserPhoneTakenException(staffUserCreate.phoneNumber)
-            }
+        checkEmailAndPassword(staffUserCreate.email, staffUserCreate.phoneNumber)
 
-        val authorities = listOf(staffUserCreate.authority)
-        val authorityEntities = authorityRepository.findAllById(authorities).asFlow().toList()
-        if (authorityEntities.isEmpty()) {
-            throw BadAuthorityException(staffUserCreate.authority)
-        }
+        val authority = staffUserCreate.authority
+        authorityRepository.findById(authority).awaitFirstOrNull()
+            ?: throw AuthorityNotFoundException(staffUserCreate.authority)
+
         val generatedPassword = generatePassword()
         val entity = UserEntity(
             staffUserCreate.firstName,
             staffUserCreate.lastName,
             staffUserCreate.phoneNumber,
-            authorityEntities,
+            authority,
             passwordEncoder.encode(generatedPassword),
             staffUserCreate.email,
             null,
@@ -191,6 +168,22 @@ class MongoUserService @Autowired constructor(
         logger.info("Staff user created")
     }
 
+    private suspend fun checkEmailAndPassword(email: String, phoneNumber: String) {
+        userRepository
+            .findByEmailIgnoreCase(email).awaitSingleOrNull()
+            ?.also { user ->
+                if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
+                else throw UserEmailTakenException(email)
+            }
+
+        userRepository
+            .findByPhoneNumber(phoneNumber).awaitSingleOrNull()
+            ?.also { user ->
+                if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
+                else throw UserPhoneTakenException(phoneNumber)
+            }
+    }
+
     override suspend fun verifyAccount(key: String): User {
         val activationKey = secureKeyRepository.findByKey(key).awaitSingleOrNull()
             ?.takeIf { it.expirationDate >= Instant.now() }
@@ -206,7 +199,7 @@ class MongoUserService @Autowired constructor(
                 userRepository.save(it).awaitSingle()
                 secureKeyRepository.delete(activationKey).awaitSingleOrNull()
             }?.toDto()
-            ?: throw UserWithIdNotFoundException(activationKey.userId)
+            ?: throw UserNotFoundException(activationKey.userId)
 
         mono {
             val customerCreate = CustomerCreate(user.userId!!)
@@ -221,28 +214,31 @@ class MongoUserService @Autowired constructor(
     override suspend fun updateUser(userUpdate: UserUpdate): User {
         logger.debug("Updating user with userId: ${userUpdate.userId}")
 
+        val isCurrentUserSuperAdmin = hasCurrentUserThisAuthority(ROLE_SUPER_ADMIN).awaitFirstOrDefault(false)
+        val isCurrentUserAdmin = hasCurrentUserThisAuthority(ROLE_ADMIN).awaitFirstOrDefault(false)
+        val isCurrentUserEditor = hasCurrentUserThisAuthority(ROLE_EDITOR).awaitFirstOrDefault(false)
+        val isCurrentUserCustomer = hasCurrentUserThisAuthority(ROLE_CUSTOMER).awaitFirstOrDefault(false)
+
         val entity = userRepository.findById(userUpdate.userId).awaitSingleOrNull()
-            ?: throw UserWithIdNotFoundException(userUpdate.userId)
+            ?: throw UserNotFoundException(userUpdate.userId)
+
+        val isGranted = isCurrentUserSuperAdmin && entity.authority in STAFF_ROLES ||
+                isCurrentUserAdmin && entity.authority in ADMIN_ROLES ||
+                isCurrentUserEditor && entity.authority in listOf(ROLE_EDITOR, ROLE_CUSTOMER) ||
+                isCurrentUserCustomer && entity.authority == ROLE_CUSTOMER
+
+        if (!isGranted) throw NotAllowedToEditUserException()
 
         userRepository.findByPhoneNumber(userUpdate.phoneNumber).awaitSingleOrNull()
             ?.also { existingUserWithPhone ->
-                if (existingUserWithPhone.id != userUpdate.userId)
-                    throw UserPhoneTakenException(userUpdate.phoneNumber)
+                if (existingUserWithPhone.id != userUpdate.userId) throw UserPhoneTakenException(userUpdate.phoneNumber)
             }
-
-        val isCurrentUserAdmin = hasCurrentUserThisAuthority(ROLE_ADMIN).awaitFirstOrDefault(false)
-        val currentAuthorityEntity = entity.authorities.first()
-        var authorities: List<AuthorityEntity> = listOf(currentAuthorityEntity)
-
-        if (isCurrentUserAdmin) {
-            val authorityEntity = authorityRepository.findAllById(listOf(userUpdate.authority)).asFlow().first()
-            if (currentAuthorityEntity.name != authorityEntity.name) {
-                authorities = listOf(authorityEntity)
-            }
-        }
+        val canUpdateAuthority = (isCurrentUserAdmin && userUpdate.authority == ROLE_EDITOR) ||
+                (isCurrentUserSuperAdmin && userUpdate.authority == ROLE_ADMIN)
 
         entity.apply {
             firstName = userUpdate.firstName
+            if (canUpdateAuthority) authority = userUpdate.authority!!
             lastName = userUpdate.lastName
             phoneNumber = userUpdate.phoneNumber
             address = userUpdate.address
@@ -250,7 +246,6 @@ class MongoUserService @Autowired constructor(
             country = userUpdate.country
             updatedAt = Instant.now()
             updatedBy = userUpdate.updatedBy
-            this.authorities = authorities
         }
 
         return userRepository.save(entity).awaitSingle()
@@ -258,36 +253,28 @@ class MongoUserService @Autowired constructor(
             .also { logger.debug("User with userId: ${it.userId} was successfully updated") }
     }
 
-    override suspend fun updateUserAvatar(filePart: FilePart, userId: String) {
+    override suspend fun updateUserPortrait(filePart: FilePart, userId: String): String {
         val userEntity = userRepository.findById(userId).awaitSingleOrNull()
-            ?: throw UserWithIdNotFoundException(userId)
+            ?: throw UserNotFoundException(userId)
 
-        userEntity.avatarId = uploadAvatar(filePart)
+        userEntity.portraitUrl = uploadPortrait(filePart)
+        return userRepository.save(userEntity).awaitSingle().portraitUrl!!
+    }
+
+    override suspend fun deleteUserPortrait(userId: String) {
+        val userEntity = userRepository.findById(userId).awaitSingleOrNull()
+            ?: throw UserNotFoundException(userId)
+
+        userEntity.portraitUrl = null
         userRepository.save(userEntity).awaitSingle()
     }
 
-    override suspend fun getAdminUsers(pageable: Pageable): Pair<List<User>, Long> {
-        return with(authorityRepository.findAllById(listOf(ROLE_ADMIN, ROLE_EDITOR)).asFlow().toList()) {
-            val users = userRepository
-                .findByAuthoritiesContainingAndDeletedFalse(this, pageable)
-                .asFlow()
-                .map { it.toDto() }
-                .toList()
-            val usersCount = userRepository.countAllByAuthoritiesContainingAndDeletedFalse(this).awaitSingle()
-            users to usersCount
-        }
+    override suspend fun getStaffUsers(pageRequest: PageRequest, query: String): Page<User> {
+        return searchUsers(pageRequest, query, listOf(ROLE_ADMIN, ROLE_EDITOR))
     }
 
-    override suspend fun getCustomerUsers(pageable: Pageable): Pair<List<User>, Long> {
-        return with(authorityRepository.findAllById(listOf(ROLE_ADMIN, ROLE_EDITOR)).asFlow().toList()) {
-            val users = userRepository
-                .findByAuthoritiesContainingAndDeletedFalse(this, pageable)
-                .asFlow()
-                .map { it.toDto() }
-                .toList()
-            val usersCount = userRepository.countAllByAuthoritiesContainingAndDeletedFalse(this).awaitSingle()
-            users to usersCount
-        }
+    override suspend fun getCustomerUsers(pageRequest: PageRequest, query: String): Page<User> {
+        return searchUsers(pageRequest, query, listOf(ROLE_CUSTOMER))
     }
 
     override suspend fun getUsersByIds(userIds: List<String>): List<User> {
@@ -301,13 +288,13 @@ class MongoUserService @Autowired constructor(
         logger.debug("Getting user with userId: $userId")
         return userRepository.findById(userId).map { it.toDto() }.awaitFirstOrNull()
             ?.also { logger.debug("user found with Id: ${it.userId}") }
-            ?: throw UserWithIdNotFoundException(userId = userId)
+            ?: throw UserNotFoundException(userId = userId)
     }
 
     override suspend fun blockUser(userId: String) {
         logger.debug("Blocking user with userId: $userId")
         val entity = userRepository.findById(userId).awaitFirstOrNull()
-            ?: throw UserWithIdNotFoundException(userId)
+            ?: throw UserNotFoundException(userId)
 
 
         entity.blocked = true
@@ -320,7 +307,7 @@ class MongoUserService @Autowired constructor(
     override suspend fun deleteUser(userId: String) {
         logger.debug("Deleting user with userId: $userId")
         val entity = userRepository.findById(userId).awaitFirstOrNull()
-            ?: throw UserWithIdNotFoundException(userId)
+            ?: throw UserNotFoundException(userId)
 
         entity.deleted = true
         entity.updatedAt = Instant.now()
@@ -338,7 +325,7 @@ class MongoUserService @Autowired constructor(
 
     override suspend fun changePassword(userId: String, passwordUpdate: PasswordUpdate) {
         val entity = userRepository.findById(userId).awaitFirstOrNull()
-            ?: throw UserWithIdNotFoundException(userId)
+            ?: throw UserNotFoundException(userId)
         if (!passwordEncoder.matches(passwordUpdate.oldPassword, entity.password)) {
             throw WrongPasswordException()
         }
@@ -350,23 +337,19 @@ class MongoUserService @Autowired constructor(
         userRepository.save(entity).awaitSingle()
     }
 
-    private suspend fun saveSecureKey(entity: SecureKeyEntity, userId: String, key: String, expiresAt: Instant) {
-        try {
-            secureKeyRepository.save(entity).awaitSingle()
-        } catch (exception: DuplicateKeyException) {
-            val existingActivationKey = secureKeyRepository.findByUserId(userId).awaitSingle()
-            existingActivationKey.apply {
-                updatedAt = Instant.now()
-                this.key = key
-                expirationDate = expiresAt
-            }
-            secureKeyRepository.save(existingActivationKey).awaitSingle()
-        }
+    private suspend fun searchUsers(pageRequest: PageRequest, query: String, authorities: List<String>): Page<User> {
+        return userRepository
+            .findUsersByAuthoritiesAndFirstNameOrLastnameOrEmailOrPhoneNumber(authorities, query, pageRequest)
+            .map { it.toDto() }
+            .collectList()
+            .zipWith(userRepository.countUsersByAuthoritiesAndFirstNameOrLastnameOrEmailOrPhoneNumber(authorities, query))
+            .map { PageImpl(it.t1, pageRequest, it.t2) }
+            .awaitFirst()
     }
 
-    private suspend fun uploadAvatar(filePart: FilePart): String {
+    private suspend fun uploadPortrait(filePart: FilePart): String {
         val (contentType, contentBytes) = filePart.extractContent()
-        return storageService.uploadFile(filePart.filename(), contentType, contentBytes)
+        return storageService.uploadProfilePortrait(filePart.filename(), contentType, contentBytes)
     }
 
     fun generatePassword(): String {

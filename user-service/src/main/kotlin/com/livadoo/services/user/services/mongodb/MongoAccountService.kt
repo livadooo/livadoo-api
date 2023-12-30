@@ -1,6 +1,6 @@
 package com.livadoo.services.user.services.mongodb
 
-import com.livadoo.common.exceptions.UnauthorizedException
+import com.livadoo.services.common.exceptions.NotAuthenticatedException
 import com.livadoo.library.security.domain.AuthUser
 import com.livadoo.library.security.domain.SYSTEM_ACCOUNT
 import com.livadoo.library.security.utils.currentUserId
@@ -8,21 +8,22 @@ import com.livadoo.proxy.notification.NotificationServiceProxy
 import com.livadoo.proxy.notification.model.PasswordResetRequest
 import com.livadoo.services.user.config.PasswordResetKeyProperties
 import com.livadoo.services.user.data.PasswordReset
-import com.livadoo.services.user.data.PasswordResetRequest as InternalPasswordResetRequest
 import com.livadoo.services.user.data.User
 import com.livadoo.services.user.exceptions.SecureKeyExpiredException
 import com.livadoo.services.user.exceptions.SecureKeyNotFoundException
-import com.livadoo.services.user.exceptions.UserWithIdNotFoundException
+import com.livadoo.services.user.exceptions.UserNotFoundException
+import com.livadoo.services.user.exceptions.WrongCredentialsException
+import com.livadoo.services.user.extensions.saveOrUpdate
 import com.livadoo.services.user.security.AuthUserDTO
 import com.livadoo.services.user.security.JwtSigner
 import com.livadoo.services.user.security.LoginCredentials
 import com.livadoo.services.user.services.AccountService
 import com.livadoo.services.user.services.mongodb.entity.KeyType.PASSWORD_RESET
-import com.livadoo.services.user.services.mongodb.entity.UserEntity
 import com.livadoo.services.user.services.mongodb.entity.SecureKeyEntity
+import com.livadoo.services.user.services.mongodb.entity.UserEntity
 import com.livadoo.services.user.services.mongodb.entity.toDto
-import com.livadoo.services.user.services.mongodb.repository.UserRepository
 import com.livadoo.services.user.services.mongodb.repository.SecureKeyRepository
+import com.livadoo.services.user.services.mongodb.repository.UserRepository
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrDefault
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -31,7 +32,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.dao.DuplicateKeyException
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -42,6 +43,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.random.Random
 import kotlin.random.nextInt
+import com.livadoo.services.user.data.PasswordResetRequest as InternalPasswordResetRequest
 
 @Service
 class MongoAccountService @Autowired constructor(
@@ -57,17 +59,20 @@ class MongoAccountService @Autowired constructor(
     private val logger = LoggerFactory.getLogger(MongoAccountService::class.simpleName)
 
     override suspend fun login(credentials: LoginCredentials): AuthUserDTO {
-        val authentication = authenticationManager
-            .authenticate(UsernamePasswordAuthenticationToken(credentials.email, credentials.password))
-            .awaitFirst()
-
-        return signToken(authentication)
+        return try{
+            val authentication = authenticationManager
+                .authenticate(UsernamePasswordAuthenticationToken(credentials.email, credentials.password))
+                .awaitFirst()
+            signToken(authentication)
+        }catch (exception: BadCredentialsException) {
+            throw WrongCredentialsException()
+        }
     }
 
     override suspend fun refreshToken(refreshToken: String): AuthUserDTO {
-        val userId = jwtSigner.getUserId(refreshToken) ?: throw UnauthorizedException()
+        val userId = jwtSigner.getUserId(refreshToken) ?: throw NotAuthenticatedException("Invalid or expired token")
         val user = userRepository.findById(userId).awaitSingleOrNull()
-            ?: throw UnauthorizedException()
+            ?: throw NotAuthenticatedException("Invalid or expired token")
         return internalAuthenticate(user)
     }
 
@@ -80,7 +85,7 @@ class MongoAccountService @Autowired constructor(
         return currentUserId.awaitFirstOrNull()
             ?.let { userId -> userRepository.findById(userId).awaitSingleOrNull() }
             ?.toDto()
-            ?: throw UnauthorizedException()
+            ?: throw NotAuthenticatedException()
     }
 
     override suspend fun requestPasswordReset(passwordResetRequest: InternalPasswordResetRequest) {
@@ -92,19 +97,9 @@ class MongoAccountService @Autowired constructor(
                     val key = Random.nextInt(IntRange(100000, 999999)).toString()
                     val keyValidityTime = passwordResetKeyProperties.validityTimeInHours
                     val expiresAt = Instant.now().plus(keyValidityTime.toLong(), ChronoUnit.HOURS)
-                    val resetKey = SecureKeyEntity(key, userId, PASSWORD_RESET, expiresAt, Instant.now(), Instant.now())
+                    val resetKeyEntity = SecureKeyEntity(key, userId, PASSWORD_RESET, expiresAt, Instant.now(), Instant.now())
 
-                    try {
-                        secureKeyRepository.save(resetKey).awaitSingle()
-                    } catch (exception: DuplicateKeyException) {
-                        val existingResetKey = secureKeyRepository.findByUserId(userId).awaitSingle()
-                        existingResetKey.apply {
-                            updatedAt = Instant.now()
-                            this.key = key
-                            expirationDate = expiresAt
-                        }
-                        secureKeyRepository.save(existingResetKey).awaitSingle()
-                    }
+                    resetKeyEntity.saveOrUpdate(secureKeyRepository, userId, key, expiresAt)
 
                     val resetRequest = PasswordResetRequest(userId, entity.email, key, keyValidityTime)
                     mono {
@@ -132,7 +127,7 @@ class MongoAccountService @Autowired constructor(
                 userRepository.save(it).awaitSingle()
                 secureKeyRepository.delete(resetKey).awaitSingleOrNull()
             }
-            ?: throw UserWithIdNotFoundException(resetKey.userId)
+            ?: throw UserNotFoundException(resetKey.userId)
     }
 
     private fun signToken(authentication: Authentication): AuthUserDTO {
@@ -143,8 +138,8 @@ class MongoAccountService @Autowired constructor(
     }
 
     private fun internalAuthenticate(user: UserEntity): AuthUserDTO {
-        val authorities = user.authorities.map { SimpleGrantedAuthority(it.name) }
-        val authUser = AuthUser(user.id!!, "", authorities)
+        val grantedAuthority = SimpleGrantedAuthority(user.authority)
+        val authUser = AuthUser(user.id!!, "", listOf(grantedAuthority))
         val authentication = UsernamePasswordAuthenticationToken(authUser, null)
 
         return signToken(authentication)

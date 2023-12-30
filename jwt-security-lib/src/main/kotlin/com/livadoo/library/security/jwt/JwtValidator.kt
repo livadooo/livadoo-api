@@ -15,7 +15,7 @@ import java.security.Key
 private const val AUTHORITIES_KEY = "roles"
 private const val AUTHORITIES_DELIMITER = ","
 
-class JwtValidator constructor(
+class JwtValidator(
     secret: String
 ) {
 
@@ -27,11 +27,11 @@ class JwtValidator constructor(
     init {
         val secretInBytes: ByteArray = secret.toByteArray()
         key = Keys.hmacShaKeyFor(secretInBytes)
-        jwtParser = Jwts.parserBuilder().setSigningKey(key).build()
+        jwtParser = Jwts.parser().verifyWith(key).build()
     }
 
     fun getAuthentication(authToken: String): Authentication {
-        val claims = jwtParser.parseClaimsJws(authToken).body
+        val claims = jwtParser.parseSignedClaims(authToken).payload
 
         val authorities = claims[AUTHORITIES_KEY]
             .toString()
@@ -46,7 +46,7 @@ class JwtValidator constructor(
 
     fun validateToken(authToken: String): Boolean {
         return try {
-            jwtParser.parseClaimsJws(authToken)
+            jwtParser.parseSignedClaims(authToken)
             true
         } catch (e: JwtException) {
             logger.info("Received invalid JWT token.")

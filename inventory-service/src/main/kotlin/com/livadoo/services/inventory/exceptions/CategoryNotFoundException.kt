@@ -1,7 +1,7 @@
 package com.livadoo.services.inventory.exceptions
 
-import com.livadoo.common.exceptions.ErrorCodes
-import com.livadoo.common.exceptions.ObjectNotFoundException
+import com.livadoo.services.common.exceptions.ErrorCodes
+import com.livadoo.services.common.exceptions.ObjectNotFoundException
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorProperty
 

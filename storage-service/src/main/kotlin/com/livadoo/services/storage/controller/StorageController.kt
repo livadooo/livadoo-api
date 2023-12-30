@@ -1,13 +1,10 @@
 package com.livadoo.services.storage.controller
 
-import com.livadoo.common.utils.extractContent
-import com.livadoo.services.storage.data.Document
+import com.livadoo.services.common.utils.extractContent
+import com.livadoo.services.storage.extension.extractHeaders
 import com.livadoo.services.storage.services.StorageService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.ContentDisposition
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,34 +23,28 @@ class StorageController @Autowired constructor(
 
     private val logger = LoggerFactory.getLogger(StorageController::class.java)
 
-    @PostMapping
-    suspend fun upload(@RequestPart("file") filePart: FilePart): String {
-        logger.info("REST --> Uploading file")
-
+    @PostMapping("/profile-portraits")
+    suspend fun uploadProfileImage(@RequestPart("file") filePart: FilePart): String {
         val (contentType, contentBytes) = filePart.extractContent()
-        return storageService
-            .uploadFile(filePart.filename(), contentType, contentBytes)
-            .also { logger.info("REST --> File uploaded") }
+
+        return storageService.uploadProfilePortrait(filePart.filename(), contentType, contentBytes)
+    }
+
+    @PostMapping("/products")
+    suspend fun uploadProductImage(@RequestPart("file") filePart: FilePart): String {
+        val (contentType, contentBytes) = filePart.extractContent()
+
+        return storageService.uploadProductImage(filePart.filename(), contentType, contentBytes)
     }
 
     @GetMapping("/{uuid}")
     suspend fun download(@PathVariable uuid: String): ResponseEntity<ByteArray> {
-//        logger.info("REST --> Downloading file with UUID: $uuid")
+        logger.info("REST --> Downloading file with uuid: $uuid")
         val document = storageService.download(uuid)
-        val headers = buildDocumentResponse(document)
+        val headers = document.extractHeaders()
 
         return ResponseEntity.ok()
             .headers(headers)
             .body(document.content)
-    }
-
-    private val buildDocumentResponse: (document: Document) -> HttpHeaders = { document ->
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.parseMediaType(document.contentType)
-        val contentDisposition = ContentDisposition.builder("attachment")
-            .filename(document.name)
-            .build()
-        headers.contentDisposition = contentDisposition
-        headers
     }
 }

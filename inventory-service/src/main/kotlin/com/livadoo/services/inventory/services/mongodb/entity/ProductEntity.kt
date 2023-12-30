@@ -1,6 +1,5 @@
 package com.livadoo.services.inventory.services.mongodb.entity
 
-import com.livadoo.services.inventory.data.Currency
 import com.livadoo.services.inventory.data.Product
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
@@ -14,12 +13,11 @@ data class ProductEntity(
     var categoryId: String,
     var quantity: Int,
     var price: Float,
-    var coverPictureId: String,
+    var active: Boolean,
+    var pictureUrl: String,
     var ordersCount: Int = 0,
-    var picturesIds: List<String> = emptyList(),
-    var active: Boolean = true,
+    var slideshowPictureUrls: Map<Int, String> = mapOf(),
     var discountPrice: Float? = null,
-    var currency: Currency = Currency.CFA,
     var createdAt: Instant = Instant.now(),
     var updatedAt: Instant? = null,
     var createdBy: String = "",
@@ -31,7 +29,7 @@ data class ProductEntity(
 )
 
 fun ProductEntity.toDto() = Product(
-    name, description, categoryId, currency,
-    quantity, price, discountPrice, coverPictureId,
-    ordersCount, picturesIds, id!!
+    name, description, categoryId, quantity, price, active,null,
+    discountPrice, pictureUrl, ordersCount,
+    slideshowPictureUrls.values.toList(), id!!, createdAt, updatedAt
 )

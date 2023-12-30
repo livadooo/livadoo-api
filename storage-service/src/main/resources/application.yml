@@ -1,7 +1,0 @@
-livadoo:
-  storage:
-    path: storage-path
-    google-cloud:
-      bucket: bucket-name
-      old-bucket: bucket-name
-      patch-bucket: false
