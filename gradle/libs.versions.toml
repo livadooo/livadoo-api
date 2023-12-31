@@ -20,6 +20,7 @@ kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version = "3.1.0" }
 mongock-bom = { module = "io.mongock:mongock-bom", version = "5.3.6" }
 mongock-springboot = { module = "io.mongock:mongock-springboot" }
+spring-boot-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "spring-boot" }
 mongock-mongodb-reactive-driver = { module = "io.mongock:mongodb-reactive-driver" }
 spotless-plugin = { module = "com.diffplug.spotless:com.diffplug.spotless.gradle.plugin", version.ref = "spotless" }
 sendgrid-java = { module = "com.sendgrid:sendgrid-java", version = "4.9.3" }
