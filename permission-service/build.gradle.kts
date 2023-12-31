@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     implementation(projects.utils.securityUtils)
+    implementation(projects.shared)
 }
