@@ -4,9 +4,9 @@ plugins {
 
 dependencies {
     implementation(projects.utils.springUtils)
+    implementation(projects.utils.securityUtils)
     implementation(project(":customer-service-proxy"))
     implementation(project(":notification-service-proxy"))
-    implementation(project(":jwt-security-lib"))
     implementation(project(":storage-service-proxy"))
     implementation(project(":user-service-proxy"))
     implementation("io.github.wimdeblauwe:error-handling-spring-boot-starter:4.0.0")

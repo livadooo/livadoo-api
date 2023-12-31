@@ -1,11 +1,11 @@
 package com.livadoo.services.user.security
 
-import com.livadoo.library.security.domain.AuthUser
 import com.livadoo.services.user.exceptions.AccountBlockedException
 import com.livadoo.services.user.exceptions.AccountNotVerifiedException
 import com.livadoo.services.user.exceptions.WrongCredentialsException
 import com.livadoo.services.user.services.mongodb.entity.UserEntity
 import com.livadoo.services.user.services.mongodb.repository.UserRepository
+import com.livadoo.utils.security.domain.AuthUser
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -18,9 +18,8 @@ import reactor.kotlin.core.publisher.toMono
 
 @Component("userDetailsService")
 class UserDetailsService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : ReactiveUserDetailsService {
-
     private val logger: Logger = LoggerFactory.getLogger(UserDetailsService::class.java)
 
     override fun findByUsername(username: String): Mono<UserDetails> {

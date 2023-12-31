@@ -1,6 +1,5 @@
 package com.livadoo.services.inventory.services.mongodb
 
-import com.livadoo.library.security.config.AppSecurityContext
 import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.inventory.data.Category
 import com.livadoo.services.inventory.data.CategoryCreate
@@ -10,6 +9,7 @@ import com.livadoo.services.inventory.services.CategoryService
 import com.livadoo.services.inventory.services.mongodb.entity.CategoryEntity
 import com.livadoo.services.inventory.services.mongodb.entity.toDto
 import com.livadoo.services.inventory.services.mongodb.repository.CategoryRepository
+import com.livadoo.utils.security.config.AppSecurityContext
 import com.livadoo.utils.spring.extractContent
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle

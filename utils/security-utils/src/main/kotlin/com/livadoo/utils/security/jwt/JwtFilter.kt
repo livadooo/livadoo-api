@@ -1,4 +1,4 @@
-package com.livadoo.library.security.jwt
+package com.livadoo.utils.security.jwt
 
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
@@ -12,10 +12,12 @@ private const val AUTHORIZATION_HEADER = "Authorization"
 private const val AUTH_TOKEN_PREFIX = "Bearer "
 
 class JwtFilter(
-    private val jwtSigner: JwtValidator
+    private val jwtSigner: JwtValidator,
 ) : WebFilter {
-
-    override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
+    override fun filter(
+        exchange: ServerWebExchange,
+        chain: WebFilterChain,
+    ): Mono<Void> {
         val authToken = extractToken(exchange.request)
         if (StringUtils.hasText(authToken) && jwtSigner.validateToken(authToken!!)) {
             val authentication = jwtSigner.getAuthentication(authToken)

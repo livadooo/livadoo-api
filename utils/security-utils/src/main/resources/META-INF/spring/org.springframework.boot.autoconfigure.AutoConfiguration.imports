@@ -1,0 +1,2 @@
+com.livadoo.utils.security.config.JwtSecurityAutoConfig
+com.livadoo.utils.security.config.AppSecurityContext

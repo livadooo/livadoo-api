@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.jwtSecurityLib)
+    implementation(projects.utils.securityUtils)
 }

@@ -1,7 +1,7 @@
 package com.livadoo.services.config
 
-import com.livadoo.library.security.jwt.JwtFilter
-import com.livadoo.library.security.jwt.JwtValidator
+import com.livadoo.utils.security.jwt.JwtFilter
+import com.livadoo.utils.security.jwt.JwtValidator
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -20,15 +20,13 @@ import org.springframework.security.web.server.util.matcher.NegatedServerWebExch
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers
 
-
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 class SecurityConfig(
     private val userDetailsService: ReactiveUserDetailsService,
-    private val jwtValidator: JwtValidator
+    private val jwtValidator: JwtValidator,
 ) {
-
     @Bean
     fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
@@ -41,16 +39,15 @@ class SecurityConfig(
         return authenticationManager
     }
 
-
     @Bean
     fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
         return http
             .securityMatcher(
                 NegatedServerWebExchangeMatcher(
                     OrServerWebExchangeMatcher(
-                        ServerWebExchangeMatchers.pathMatchers(HttpMethod.OPTIONS, "/**")
-                    )
-                )
+                        ServerWebExchangeMatchers.pathMatchers(HttpMethod.OPTIONS, "/**"),
+                    ),
+                ),
             )
             .csrf(Customizer.withDefaults())
             .addFilterAt(JwtFilter(jwtValidator), SecurityWebFiltersOrder.HTTP_BASIC)

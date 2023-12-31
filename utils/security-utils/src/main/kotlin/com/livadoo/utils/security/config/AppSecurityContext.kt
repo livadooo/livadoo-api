@@ -1,8 +1,8 @@
-package com.livadoo.library.security.config
+package com.livadoo.utils.security.config
 
-import com.livadoo.library.security.domain.AuthUser
-import com.livadoo.library.security.domain.SYSTEM_ACCOUNT
 import com.livadoo.utils.exception.UnauthorizedException
+import com.livadoo.utils.security.domain.AuthUser
+import com.livadoo.utils.security.domain.SYSTEM_ACCOUNT
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AnonymousAuthenticationToken

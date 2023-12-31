@@ -1,7 +1,5 @@
 package com.livadoo.services.user.services.mongodb
 
-import com.livadoo.library.security.config.AppSecurityContext
-import com.livadoo.library.security.domain.AuthUser
 import com.livadoo.proxy.notification.NotificationServiceProxy
 import com.livadoo.proxy.notification.model.PasswordResetRequest
 import com.livadoo.services.user.config.PasswordResetKeyProperties
@@ -23,6 +21,8 @@ import com.livadoo.services.user.services.mongodb.entity.toDto
 import com.livadoo.services.user.services.mongodb.repository.SecureKeyRepository
 import com.livadoo.services.user.services.mongodb.repository.UserRepository
 import com.livadoo.utils.exception.UnauthorizedException
+import com.livadoo.utils.security.config.AppSecurityContext
+import com.livadoo.utils.security.domain.AuthUser
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull

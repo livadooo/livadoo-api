@@ -1,11 +1,11 @@
 package com.livadoo.services.customer.address
 
-import com.livadoo.library.security.config.AppSecurityContext
 import com.livadoo.services.customer.address.data.Address
 import com.livadoo.services.customer.address.data.AddressCreate
 import com.livadoo.services.customer.address.data.AddressEdit
 import com.livadoo.services.customer.exceptions.AddressNotFoundException
 import com.livadoo.services.customer.services.mongodb.repository.CustomerRepository
+import com.livadoo.utils.security.config.AppSecurityContext
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingle

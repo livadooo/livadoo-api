@@ -1,4 +1,4 @@
-package com.livadoo.library.security.domain
+package com.livadoo.utils.security.domain
 
 const val ROLE_ANONYMOUS = "ROLE_ANONYMOUS"
 const val ROLE_ADMIN = "ROLE_ADMIN"
