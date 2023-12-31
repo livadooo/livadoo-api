@@ -19,6 +19,8 @@ dependencies {
     implementation(projects.storageService)
     implementation(projects.inventoryService)
     implementation(projects.common)
+    implementation(projects.roleService)
+    implementation(projects.permissionService)
 
     implementation(platform(libs.mongock.bom))
     implementation(libs.mongock.mongodb.reactive.driver)
