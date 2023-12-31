@@ -2,7 +2,7 @@
 jjwt = "0.12.3"
 kotlin = "1.9.21"
 kotlin-allopen = "1.9.22"
-spotless = "6.17.0"
+spotless = "6.23.3"
 spring-boot = "3.2.1"
 spring-dependency-management = "1.1.4"
 
