@@ -21,6 +21,7 @@ include(
     "customer-service-proxy",
     "inventory-service-proxy",
     "utils:user-utils",
+    "utils:exception-utils",
     "role-service",
     "permission-service",
 )
