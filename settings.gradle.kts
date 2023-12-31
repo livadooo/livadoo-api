@@ -22,4 +22,5 @@ include(
     "inventory-service-proxy",
     "utils:user-utils",
     "role-service",
+    "permission-service",
 )
