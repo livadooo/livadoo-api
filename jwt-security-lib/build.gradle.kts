@@ -16,6 +16,7 @@ dependencyManagement {
 }
 
 dependencies {
+    implementation(projects.utils.exceptionUtils)
     implementation(libs.jjwt.api)
     implementation(libs.jjwt.impl)
     implementation(libs.jjwt.jackson)
@@ -23,4 +24,5 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.spring.boot.security)
     implementation(libs.spring.boot.webflux)
+    implementation(libs.kotlinx.coroutines.reactive)
 }

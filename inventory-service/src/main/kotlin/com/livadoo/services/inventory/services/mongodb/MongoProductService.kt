@@ -1,6 +1,6 @@
 package com.livadoo.services.inventory.services.mongodb
 
-import com.livadoo.library.security.utils.currentAuthUser
+import com.livadoo.library.security.config.AppSecurityContext
 import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.inventory.data.Product
 import com.livadoo.services.inventory.data.ProductCreate
@@ -12,8 +12,6 @@ import com.livadoo.services.inventory.services.mongodb.entity.ProductEntity
 import com.livadoo.services.inventory.services.mongodb.entity.toDto
 import com.livadoo.services.inventory.services.mongodb.repository.CategoryRepository
 import com.livadoo.services.inventory.services.mongodb.repository.ProductRepository
-import com.livadoo.utils.exception.ForbiddenException
-import com.livadoo.utils.exception.UnauthorizedException
 import com.livadoo.utils.spring.extractContent
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
@@ -31,67 +29,62 @@ class MongoProductService(
     private val productRepository: ProductRepository,
     private val categoryRepository: CategoryRepository,
     private val storageService: StorageServiceProxy,
+    private val securityContext: AppSecurityContext,
 ) : ProductService {
     override suspend fun createProduct(
         productCreate: ProductCreate,
         filePart: FilePart,
     ): Product {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException("You are not authenticated")
+        val coverPictureUrl = uploadProductImage(filePart)
+        val (name, description, categoryId, quantity, price) = productCreate
+        val productEntity =
+            ProductEntity(
+                name = name,
+                description = description,
+                categoryId = categoryId,
+                quantity = quantity,
+                price = price,
+                active = true,
+                pictureUrl = coverPictureUrl,
+                createdBy = securityContext.getCurrentUserId(),
+            )
 
-        return if (currentUser.isAdmin) {
-            val coverPictureUrl = uploadProductImage(filePart)
-            val (name, description, categoryId, quantity, price) = productCreate
-            val productEntity =
-                ProductEntity(name, description, categoryId, quantity, price, true, coverPictureUrl, createdBy = currentUser.username)
-
-            productRepository.save(productEntity).map { it.toDto() }.awaitSingle()
-        } else {
-            throw ForbiddenException("Access denied")
-        }
+        return productRepository.save(productEntity).map { it.toDto() }.awaitSingle()
     }
 
     override suspend fun updateProduct(productEdit: ProductEdit): Product {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException("You are not authenticated")
+        val (name, description, categoryId, quantity, price, active, productId, discountPrice) = productEdit
 
-        return if (currentUser.isAdmin) {
-            val (name, description, categoryId, quantity, price, active, productId, discountPrice) = productEdit
+        val productEntity =
+            productRepository.findById(productId).awaitSingleOrNull()
+                ?.apply {
+                    this.name = name
+                    this.description = description
+                    this.categoryId = categoryId
+                    this.quantity = quantity
+                    this.price = price
+                    this.active = active
+                    this.discountPrice = discountPrice
+                }
+                ?: throw ProductNotFoundException(productId)
 
-            val productEntity =
-                productRepository.findById(productId).awaitSingleOrNull()
-                    ?.apply {
-                        this.name = name
-                        this.description = description
-                        this.categoryId = categoryId
-                        this.quantity = quantity
-                        this.price = price
-                        this.active = active
-                        this.discountPrice = discountPrice
-                    }
-                    ?: throw ProductNotFoundException(productId)
-
-            productRepository.save(productEntity).map { it.toDto() }.awaitSingle()
-        } else {
-            throw ForbiddenException("Access denied")
-        }
+        return productRepository.save(productEntity).map { it.toDto() }.awaitSingle()
     }
 
     override suspend fun updateProductPicture(
         productId: String,
         filePart: FilePart,
     ): String {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException("You are not authenticated")
+        val productEntity =
+            productRepository.findById(productId).awaitSingleOrNull()
+                ?: throw ProductNotFoundException(productId)
 
-        return if (currentUser.isAdmin) {
-            val productEntity =
-                productRepository.findById(productId).awaitSingleOrNull()
-                    ?: throw ProductNotFoundException(productId)
+        productEntity.pictureUrl = uploadProductImage(filePart)
 
-            productEntity.pictureUrl = uploadProductImage(filePart)
-
-            productRepository.save(productEntity).map { it.toDto() }.awaitSingle().pictureUrl
-        } else {
-            throw ForbiddenException("Access denied")
-        }
+        return productRepository.save(productEntity)
+            .map { it.toDto() }
+            .awaitSingle()
+            .pictureUrl
     }
 
     override suspend fun getProduct(productId: String): Product {

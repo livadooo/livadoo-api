@@ -1,15 +1,13 @@
 package com.livadoo.services.customer.address
 
-import com.livadoo.library.security.utils.currentUserId
+import com.livadoo.library.security.config.AppSecurityContext
 import com.livadoo.services.customer.address.data.Address
 import com.livadoo.services.customer.address.data.AddressCreate
 import com.livadoo.services.customer.address.data.AddressEdit
 import com.livadoo.services.customer.exceptions.AddressNotFoundException
 import com.livadoo.services.customer.services.mongodb.repository.CustomerRepository
-import com.livadoo.utils.exception.UnauthorizedException
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.stereotype.Service
@@ -19,16 +17,13 @@ import java.time.Instant
 class MongoAddressService(
     private val addressRepository: AddressRepository,
     private val customerRepository: CustomerRepository,
+    private val securityContext: AppSecurityContext,
 ) : AddressService {
     override suspend fun createAddress(addressCreate: AddressCreate) {
         val (countryCode, fullName, phoneNumber, address, city, region, isDefault) = addressCreate
-        val customerId =
-            currentUserId.awaitSingleOrNull()
-                ?.let { customerRepository.findByUserId(it).awaitSingle() }
-                ?.customerId
-                ?: throw UnauthorizedException("You are not authenticated")
+        val customerEntity = customerRepository.findByUserId(securityContext.getCurrentUserId()).awaitSingle()
 
-        val addressEntity = AddressEntity(customerId, countryCode, fullName, phoneNumber, address, city, region, isDefault)
+        val addressEntity = AddressEntity(customerEntity.customerId, countryCode, fullName, phoneNumber, address, city, region, isDefault)
 
         addressRepository.save(addressEntity).awaitSingle()
     }
@@ -63,9 +58,10 @@ class MongoAddressService(
     }
 
     override suspend fun getAddresses(): List<Address> {
-        return currentUserId.awaitFirstOrNull()
-            ?.let { customerRepository.findByUserId(it).awaitSingle().customerId }
-            ?.let { customerId -> addressRepository.findByCustomerId(customerId).map { it.toDto() }.asFlow().toList() }
-            ?: throw UnauthorizedException("You are not authenticated")
+        val customerEntity = customerRepository.findByUserId(securityContext.getCurrentUserId()).awaitSingle()
+        return addressRepository.findByCustomerId(customerEntity.customerId)
+            .map { it.toDto() }
+            .asFlow()
+            .toList()
     }
 }
