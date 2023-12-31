@@ -23,4 +23,5 @@ include(
     "utils:user-utils",
     "utils:exception-utils",
     "role-service",
+    "permission-service",
 )
