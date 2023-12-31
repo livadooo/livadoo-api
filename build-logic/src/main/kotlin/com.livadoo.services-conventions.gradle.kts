@@ -14,6 +14,8 @@ dependencyManagement {
 }
 
 dependencies {
+	implementation(project(":utils:exception-utils"))
+
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")

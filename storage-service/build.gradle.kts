@@ -5,7 +5,7 @@ plugins {
 version = "0.0.1"
 
 dependencies {
-    implementation(project(":common"))
+    implementation(projects.utils.springUtils)
     implementation(project(":storage-service-proxy"))
 
     implementation(platform("com.google.cloud:spring-cloud-gcp-dependencies:3.0.0"))
