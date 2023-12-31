@@ -1,4 +1,4 @@
-package com.livadoo.services.role
+package com.livadoo.services.permission
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
@@ -6,13 +6,12 @@ import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-@Document("roles")
-data class RoleEntity(
+@Document("permissions")
+data class PermissionEntity(
     @Indexed(unique = true)
-    var role: String,
-    @Indexed(unique = true)
-    var title: String,
+    var permission: String,
     var description: String,
+    val roleId: String,
     var createdAt: Instant,
     var updatedAt: Instant? = null,
     var createdBy: String,
@@ -23,10 +22,9 @@ data class RoleEntity(
     var version: Int = 0,
 )
 
-fun RoleEntity.toDto(): RoleDto =
-    RoleDto(
-        role = role,
-        title = title,
+fun PermissionEntity.toDto(): PermissionDto =
+    PermissionDto(
+        permission = permission,
         description = description,
-        roleId = id!!,
+        permissionId = id!!,
     )
