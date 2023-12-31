@@ -21,4 +21,5 @@ include(
     "customer-service-proxy",
     "inventory-service-proxy",
     "utils:user-utils",
+    "role-service",
 )
