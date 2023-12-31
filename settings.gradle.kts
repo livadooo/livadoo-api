@@ -8,7 +8,6 @@ pluginManagement {
 
 include(
     "app",
-    "jwt-security-lib",
     "user-service",
     "user-service-proxy",
     "shared",
@@ -21,6 +20,7 @@ include(
     "customer-service-proxy",
     "inventory-service-proxy",
     "utils:exception-utils",
+    "utils:security-utils",
     "utils:spring-utils",
     "utils:user-utils",
     "role-service",

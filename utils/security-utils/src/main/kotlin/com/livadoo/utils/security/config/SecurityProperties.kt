@@ -1,4 +1,4 @@
-package com.livadoo.library.security.config
+package com.livadoo.utils.security.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
@@ -9,6 +9,5 @@ data class SecurityProperties(
     val tokenValidityInSeconds: Long,
     val refreshTokenValidityInSeconds: Long,
     val staffTokenValidityInSeconds: Long,
-    val staffRefreshTokenValidityInSeconds: Long
-) {
-}
+    val staffRefreshTokenValidityInSeconds: Long,
+)

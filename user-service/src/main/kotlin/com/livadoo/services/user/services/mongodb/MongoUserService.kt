@@ -1,10 +1,5 @@
 package com.livadoo.services.user.services.mongodb
 
-import com.livadoo.library.security.config.AppSecurityContext
-import com.livadoo.library.security.domain.ROLE_ADMIN
-import com.livadoo.library.security.domain.ROLE_CUSTOMER
-import com.livadoo.library.security.domain.ROLE_EDITOR
-import com.livadoo.library.security.domain.SYSTEM_ACCOUNT
 import com.livadoo.proxy.customer.CustomerServiceProxy
 import com.livadoo.proxy.customer.model.CustomerCreate
 import com.livadoo.proxy.notification.NotificationServiceProxy
@@ -35,6 +30,11 @@ import com.livadoo.services.user.services.mongodb.entity.toDto
 import com.livadoo.services.user.services.mongodb.repository.AuthorityRepository
 import com.livadoo.services.user.services.mongodb.repository.SecureKeyRepository
 import com.livadoo.services.user.services.mongodb.repository.UserRepository
+import com.livadoo.utils.security.config.AppSecurityContext
+import com.livadoo.utils.security.domain.ROLE_ADMIN
+import com.livadoo.utils.security.domain.ROLE_CUSTOMER
+import com.livadoo.utils.security.domain.ROLE_EDITOR
+import com.livadoo.utils.security.domain.SYSTEM_ACCOUNT
 import com.livadoo.utils.spring.extractContent
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList

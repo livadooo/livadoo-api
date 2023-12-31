@@ -1,6 +1,6 @@
-package com.livadoo.library.security.jwt
+package com.livadoo.utils.security.jwt
 
-import com.livadoo.library.security.domain.AuthUser
+import com.livadoo.utils.security.domain.AuthUser
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
@@ -16,9 +16,8 @@ private const val AUTHORITIES_KEY = "roles"
 private const val AUTHORITIES_DELIMITER = ","
 
 class JwtValidator(
-    secret: String
+    secret: String,
 ) {
-
     private val logger: Logger = LoggerFactory.getLogger(JwtValidator::class.java)
 
     private val key: Key
@@ -33,12 +32,13 @@ class JwtValidator(
     fun getAuthentication(authToken: String): Authentication {
         val claims = jwtParser.parseSignedClaims(authToken).payload
 
-        val authorities = claims[AUTHORITIES_KEY]
-            .toString()
-            .split(AUTHORITIES_DELIMITER)
-            .filter { authority -> authority.trim().isNotEmpty() }
-            .map { SimpleGrantedAuthority(it) }
-            .toList()
+        val authorities =
+            claims[AUTHORITIES_KEY]
+                .toString()
+                .split(AUTHORITIES_DELIMITER)
+                .filter { authority -> authority.trim().isNotEmpty() }
+                .map { SimpleGrantedAuthority(it) }
+                .toList()
         val principal = AuthUser(claims.subject, "", authorities)
 
         return UsernamePasswordAuthenticationToken(principal, authToken, authorities)

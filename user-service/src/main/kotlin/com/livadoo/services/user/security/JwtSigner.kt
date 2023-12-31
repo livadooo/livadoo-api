@@ -1,7 +1,7 @@
 package com.livadoo.services.user.security
 
-import com.livadoo.library.security.config.SecurityProperties
-import com.livadoo.library.security.domain.AuthUser
+import com.livadoo.utils.security.config.SecurityProperties
+import com.livadoo.utils.security.domain.AuthUser
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -11,7 +11,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.Date
 import javax.crypto.SecretKey
 
 private const val AUTHORITIES_KEY = "roles"
@@ -19,9 +19,8 @@ private const val AUTHORITIES_DELIMITER = ","
 
 @Service
 class JwtSigner(
-    private val securityProperties: SecurityProperties
+    private val securityProperties: SecurityProperties,
 ) {
-
     private val logger: Logger = LoggerFactory.getLogger(JwtSigner::class.java)
 
     fun createAccessToken(authentication: Authentication): String {

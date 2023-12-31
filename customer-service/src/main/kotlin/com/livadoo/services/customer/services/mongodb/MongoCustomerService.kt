@@ -1,6 +1,5 @@
 package com.livadoo.services.customer.services.mongodb
 
-import com.livadoo.library.security.domain.SYSTEM_ACCOUNT
 import com.livadoo.services.customer.data.Customer
 import com.livadoo.services.customer.data.CustomerCreate
 import com.livadoo.services.customer.data.buildCustomerId
@@ -9,6 +8,7 @@ import com.livadoo.services.customer.services.CustomerService
 import com.livadoo.services.customer.services.mongodb.entity.CustomerEntity
 import com.livadoo.services.customer.services.mongodb.entity.toDto
 import com.livadoo.services.customer.services.mongodb.repository.CustomerRepository
+import com.livadoo.utils.security.domain.SYSTEM_ACCOUNT
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.slf4j.LoggerFactory

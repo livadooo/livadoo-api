@@ -1,6 +1,5 @@
 package com.livadoo.services.inventory.services.mongodb
 
-import com.livadoo.library.security.config.AppSecurityContext
 import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.inventory.data.Product
 import com.livadoo.services.inventory.data.ProductCreate
@@ -12,6 +11,7 @@ import com.livadoo.services.inventory.services.mongodb.entity.ProductEntity
 import com.livadoo.services.inventory.services.mongodb.entity.toDto
 import com.livadoo.services.inventory.services.mongodb.repository.CategoryRepository
 import com.livadoo.services.inventory.services.mongodb.repository.ProductRepository
+import com.livadoo.utils.security.config.AppSecurityContext
 import com.livadoo.utils.spring.extractContent
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow

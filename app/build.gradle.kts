@@ -12,7 +12,6 @@ group = "com.livadoo.services"
 version = "0.0.1"
 
 dependencies {
-    implementation(projects.jwtSecurityLib)
     implementation(projects.notificationService)
     implementation(projects.userService)
     implementation(projects.customerService)
@@ -20,6 +19,7 @@ dependencies {
     implementation(projects.inventoryService)
     implementation(projects.roleService)
     implementation(projects.permissionService)
+    implementation(projects.utils.securityUtils)
 
     implementation(platform(libs.mongock.bom))
     implementation(libs.mongock.mongodb.reactive.driver)

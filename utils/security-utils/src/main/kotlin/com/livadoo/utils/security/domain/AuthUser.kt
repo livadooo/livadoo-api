@@ -1,4 +1,4 @@
-package com.livadoo.library.security.domain
+package com.livadoo.utils.security.domain
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.User
@@ -6,7 +6,7 @@ import org.springframework.security.core.userdetails.User
 class AuthUser(
     username: String,
     password: String,
-    authorities: List<GrantedAuthority>
+    authorities: List<GrantedAuthority>,
 ) : User(username, password, authorities) {
     val isCustomer: Boolean
         get() = authorities.firstOrNull { it.authority == ROLE_CUSTOMER } != null
