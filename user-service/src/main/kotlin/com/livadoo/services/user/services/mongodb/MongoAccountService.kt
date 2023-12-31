@@ -1,8 +1,7 @@
 package com.livadoo.services.user.services.mongodb
 
+import com.livadoo.library.security.config.AppSecurityContext
 import com.livadoo.library.security.domain.AuthUser
-import com.livadoo.library.security.domain.SYSTEM_ACCOUNT
-import com.livadoo.library.security.utils.currentUserId
 import com.livadoo.proxy.notification.NotificationServiceProxy
 import com.livadoo.proxy.notification.model.PasswordResetRequest
 import com.livadoo.services.user.config.PasswordResetKeyProperties
@@ -25,8 +24,6 @@ import com.livadoo.services.user.services.mongodb.repository.SecureKeyRepository
 import com.livadoo.services.user.services.mongodb.repository.UserRepository
 import com.livadoo.utils.exception.UnauthorizedException
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrDefault
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
@@ -53,6 +50,7 @@ class MongoAccountService(
     private val passwordResetKeyProperties: PasswordResetKeyProperties,
     private val secureKeyRepository: SecureKeyRepository,
     private val notificationService: NotificationServiceProxy,
+    private val securityContext: AppSecurityContext,
 ) : AccountService {
     private val logger = LoggerFactory.getLogger(MongoAccountService::class.simpleName)
 
@@ -82,10 +80,9 @@ class MongoAccountService(
     }
 
     override suspend fun getCurrentUser(): User {
-        return currentUserId.awaitFirstOrNull()
-            ?.let { userId -> userRepository.findById(userId).awaitSingleOrNull() }
-            ?.toDto()
-            ?: throw UnauthorizedException("You are not authenticated")
+        return userRepository.findById(securityContext.getCurrentUserId())
+            .map { it.toDto() }
+            .awaitSingle()
     }
 
     override suspend fun requestPasswordReset(passwordResetRequest: InternalPasswordResetRequest) {
@@ -122,7 +119,6 @@ class MongoAccountService(
                 val newPassword = passwordEncoder.encode(passwordReset.newPassword)
                 password = newPassword
                 updatedAt = Instant.now()
-                updatedBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT)
             }
             ?.also {
                 userRepository.save(it).awaitSingle()

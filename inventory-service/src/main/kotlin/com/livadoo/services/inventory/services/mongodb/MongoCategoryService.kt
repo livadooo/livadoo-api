@@ -1,6 +1,6 @@
 package com.livadoo.services.inventory.services.mongodb
 
-import com.livadoo.library.security.utils.currentAuthUser
+import com.livadoo.library.security.config.AppSecurityContext
 import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.inventory.data.Category
 import com.livadoo.services.inventory.data.CategoryCreate
@@ -10,8 +10,6 @@ import com.livadoo.services.inventory.services.CategoryService
 import com.livadoo.services.inventory.services.mongodb.entity.CategoryEntity
 import com.livadoo.services.inventory.services.mongodb.entity.toDto
 import com.livadoo.services.inventory.services.mongodb.repository.CategoryRepository
-import com.livadoo.utils.exception.ForbiddenException
-import com.livadoo.utils.exception.UnauthorizedException
 import com.livadoo.utils.spring.extractContent
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle
@@ -27,66 +25,59 @@ import java.time.Instant
 class MongoCategoryService(
     private val categoryRepository: CategoryRepository,
     private val storageService: StorageServiceProxy,
+    private val securityContext: AppSecurityContext,
 ) : CategoryService {
     override suspend fun createCategory(
         categoryCreate: CategoryCreate,
         filePart: FilePart,
     ): Category {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException("You are not authenticated")
+        val pictureUrl = uploadCategoryImage(filePart)
+        val (name, description, parentId) = categoryCreate
+        val categoryEntity =
+            CategoryEntity(
+                name = name,
+                description = description,
+                parentId = parentId,
+                pictureUrl = pictureUrl,
+                active = true,
+                createdBy = securityContext.getCurrentUserId(),
+            )
 
-        return if (currentUser.isStaff) {
-            val pictureUrl = uploadCategoryImage(filePart)
-            val (name, description, parentId) = categoryCreate
-            val categoryEntity = CategoryEntity(name, description, parentId, pictureUrl, true, createdBy = currentUser.username)
-
-            categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
-        } else {
-            throw ForbiddenException("Access denied")
-        }
+        return categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
     }
 
     override suspend fun updateCategory(categoryEdit: CategoryEdit): Category {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException("You are not authenticated")
-
-        return if (currentUser.isStaff) {
-            val (name, description, parentId, active, categoryId) = categoryEdit
-            parentId?.let { categoryRepository.findById(it).awaitSingleOrNull() ?: throw CategoryNotFoundException(it) }
-
-            val categoryEntity =
-                categoryRepository.findById(categoryId).awaitSingleOrNull()
-                    ?.apply {
-                        this.name = name
-                        this.description = description
-                        this.active = active
-                        this.parentId = parentId
-                        updatedAt = Instant.now()
-                        updatedBy = currentUser.username
-                    }
-                    ?: throw CategoryNotFoundException(categoryId)
-
-            categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
-        } else {
-            throw ForbiddenException("Access denied")
+        val (name, description, parentId, active, categoryId) = categoryEdit
+        parentId?.let {
+            categoryRepository.findById(it).awaitSingleOrNull() ?: throw CategoryNotFoundException(it)
         }
+
+        val categoryEntity =
+            categoryRepository.findById(categoryId).awaitSingleOrNull()
+                ?.apply {
+                    this.name = name
+                    this.description = description
+                    this.active = active
+                    this.parentId = parentId
+                    updatedAt = Instant.now()
+                    updatedBy = securityContext.getCurrentUserId()
+                }
+                ?: throw CategoryNotFoundException(categoryId)
+
+        return categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
     }
 
     override suspend fun updateCategoryPicture(
         categoryId: String,
         filePart: FilePart,
     ): String {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException("You are not authenticated")
+        val categoryEntity =
+            categoryRepository.findById(categoryId).awaitSingleOrNull()
+                ?: throw CategoryNotFoundException(categoryId)
 
-        return if (currentUser.isStaff) {
-            val categoryEntity =
-                categoryRepository.findById(categoryId).awaitSingleOrNull()
-                    ?: throw CategoryNotFoundException(categoryId)
+        categoryEntity.pictureUrl = uploadCategoryImage(filePart)
 
-            categoryEntity.pictureUrl = uploadCategoryImage(filePart)
-
-            categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle().pictureUrl
-        } else {
-            throw ForbiddenException("Access denied")
-        }
+        return categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle().pictureUrl
     }
 
     override suspend fun getCategory(categoryId: String): Category {
