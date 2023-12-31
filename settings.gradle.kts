@@ -19,5 +19,6 @@ include(
     "notification-service-proxy",
     "storage-service-proxy",
     "customer-service-proxy",
-    "inventory-service-proxy"
+    "inventory-service-proxy",
+    "utils:user-utils",
 )
