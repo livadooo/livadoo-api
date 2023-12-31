@@ -11,7 +11,7 @@ include(
     "jwt-security-lib",
     "user-service",
     "user-service-proxy",
-    "common",
+    "shared",
     "notification-service",
     "inventory-service",
     "storage-service",

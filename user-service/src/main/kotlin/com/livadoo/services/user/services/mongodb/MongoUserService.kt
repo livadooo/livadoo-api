@@ -16,7 +16,6 @@ import com.livadoo.proxy.notification.NotificationServiceProxy
 import com.livadoo.proxy.notification.model.CustomerAccount
 import com.livadoo.proxy.notification.model.StaffAccount
 import com.livadoo.proxy.storage.StorageServiceProxy
-import com.livadoo.services.common.utils.extractContent
 import com.livadoo.services.user.config.PasswordResetKeyProperties
 import com.livadoo.services.user.data.CustomerUserCreate
 import com.livadoo.services.user.data.PasswordUpdate
@@ -41,6 +40,7 @@ import com.livadoo.services.user.services.mongodb.entity.toDto
 import com.livadoo.services.user.services.mongodb.repository.AuthorityRepository
 import com.livadoo.services.user.services.mongodb.repository.SecureKeyRepository
 import com.livadoo.services.user.services.mongodb.repository.UserRepository
+import com.livadoo.utils.spring.extractContent
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
@@ -60,7 +60,7 @@ import org.springframework.stereotype.Service
 import org.springframework.util.Base64Utils
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.UUID
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -75,7 +75,6 @@ class MongoUserService(
     private val storageService: StorageServiceProxy,
     private val customerService: CustomerServiceProxy,
 ) : UserService {
-
     private val logger = LoggerFactory.getLogger(MongoUserService::class.java)
 
     override suspend fun createCustomerUser(customerUserCreate: CustomerUserCreate) {
@@ -86,18 +85,19 @@ class MongoUserService(
 
         checkEmailAndPassword(customerUserCreate.email, customerUserCreate.phoneNumber)
 
-        val entity = UserEntity(
-            customerUserCreate.firstName,
-            customerUserCreate.lastName,
-            customerUserCreate.phoneNumber,
-            ROLE_CUSTOMER,
-            passwordEncoder.encode(customerUserCreate.password),
-            customerUserCreate.email,
-            null,
-            verified = isCurrentUserStaff,
-            createdBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT),
-            createdAt = Instant.now()
-        )
+        val entity =
+            UserEntity(
+                customerUserCreate.firstName,
+                customerUserCreate.lastName,
+                customerUserCreate.phoneNumber,
+                ROLE_CUSTOMER,
+                passwordEncoder.encode(customerUserCreate.password),
+                customerUserCreate.email,
+                null,
+                verified = isCurrentUserStaff,
+                createdBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT),
+                createdAt = Instant.now(),
+            )
 
         val user = userRepository.save(entity).awaitSingle().toDto()
         if (isCurrentUserStaff) {
@@ -131,7 +131,8 @@ class MongoUserService(
         val isCurrentUserSuperAdmin = hasCurrentUserThisAuthority(ROLE_SUPER_ADMIN).awaitFirstOrDefault(false)
         val isCurrentUserAdmin = hasCurrentUserThisAuthority(ROLE_ADMIN).awaitFirstOrDefault(false)
 
-        val isGranted = (isCurrentUserAdmin && staffUserCreate.authority == ROLE_EDITOR) ||
+        val isGranted =
+            (isCurrentUserAdmin && staffUserCreate.authority == ROLE_EDITOR) ||
                 (isCurrentUserSuperAdmin && staffUserCreate.authority == ROLE_ADMIN)
 
         if (!isGranted) throw NotAllowedToCreateUserException()
@@ -143,18 +144,19 @@ class MongoUserService(
             ?: throw AuthorityNotFoundException(staffUserCreate.authority)
 
         val generatedPassword = generatePassword()
-        val entity = UserEntity(
-            staffUserCreate.firstName,
-            staffUserCreate.lastName,
-            staffUserCreate.phoneNumber,
-            authority,
-            passwordEncoder.encode(generatedPassword),
-            staffUserCreate.email,
-            null,
-            verified = true,
-            createdBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT),
-            createdAt = Instant.now()
-        )
+        val entity =
+            UserEntity(
+                staffUserCreate.firstName,
+                staffUserCreate.lastName,
+                staffUserCreate.phoneNumber,
+                authority,
+                passwordEncoder.encode(generatedPassword),
+                staffUserCreate.email,
+                null,
+                verified = true,
+                createdBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT),
+                createdAt = Instant.now(),
+            )
 
         val user = userRepository.save(entity).awaitSingle().toDto()
         mono {
@@ -167,38 +169,49 @@ class MongoUserService(
         logger.info("Staff user created")
     }
 
-    private suspend fun checkEmailAndPassword(email: String, phoneNumber: String) {
+    private suspend fun checkEmailAndPassword(
+        email: String,
+        phoneNumber: String,
+    ) {
         userRepository
             .findByEmailIgnoreCase(email).awaitSingleOrNull()
             ?.also { user ->
-                if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserEmailTakenException(email)
+                if (!user.verified) {
+                    userRepository.delete(user).awaitSingleOrNull()
+                } else {
+                    throw UserEmailTakenException(email)
+                }
             }
 
         userRepository
             .findByPhoneNumber(phoneNumber).awaitSingleOrNull()
             ?.also { user ->
-                if (!user.verified) userRepository.delete(user).awaitSingleOrNull()
-                else throw UserPhoneTakenException(phoneNumber)
+                if (!user.verified) {
+                    userRepository.delete(user).awaitSingleOrNull()
+                } else {
+                    throw UserPhoneTakenException(phoneNumber)
+                }
             }
     }
 
     override suspend fun verifyAccount(key: String): User {
-        val activationKey = secureKeyRepository.findByKey(key).awaitSingleOrNull()
-            ?.takeIf { it.expirationDate >= Instant.now() }
-            ?: throw SecureKeyExpiredException(key)
+        val activationKey =
+            secureKeyRepository.findByKey(key).awaitSingleOrNull()
+                ?.takeIf { it.expirationDate >= Instant.now() }
+                ?: throw SecureKeyExpiredException(key)
 
-        val user = userRepository.findById(activationKey.userId).awaitSingleOrNull()
-            ?.apply {
-                verified = true
-                updatedAt = Instant.now()
-                updatedBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT)
-            }
-            ?.also {
-                userRepository.save(it).awaitSingle()
-                secureKeyRepository.delete(activationKey).awaitSingleOrNull()
-            }?.toDto()
-            ?: throw UserNotFoundException(activationKey.userId)
+        val user =
+            userRepository.findById(activationKey.userId).awaitSingleOrNull()
+                ?.apply {
+                    verified = true
+                    updatedAt = Instant.now()
+                    updatedBy = currentUserId.awaitFirstOrDefault(SYSTEM_ACCOUNT)
+                }
+                ?.also {
+                    userRepository.save(it).awaitSingle()
+                    secureKeyRepository.delete(activationKey).awaitSingleOrNull()
+                }?.toDto()
+                ?: throw UserNotFoundException(activationKey.userId)
 
         mono {
             val customerCreate = CustomerCreate(user.userId!!)
@@ -218,10 +231,12 @@ class MongoUserService(
         val isCurrentUserEditor = hasCurrentUserThisAuthority(ROLE_EDITOR).awaitFirstOrDefault(false)
         val isCurrentUserCustomer = hasCurrentUserThisAuthority(ROLE_CUSTOMER).awaitFirstOrDefault(false)
 
-        val entity = userRepository.findById(userUpdate.userId).awaitSingleOrNull()
-            ?: throw UserNotFoundException(userUpdate.userId)
+        val entity =
+            userRepository.findById(userUpdate.userId).awaitSingleOrNull()
+                ?: throw UserNotFoundException(userUpdate.userId)
 
-        val isGranted = isCurrentUserSuperAdmin && entity.authority in STAFF_ROLES ||
+        val isGranted =
+            isCurrentUserSuperAdmin && entity.authority in STAFF_ROLES ||
                 isCurrentUserAdmin && entity.authority in ADMIN_ROLES ||
                 isCurrentUserEditor && entity.authority in listOf(ROLE_EDITOR, ROLE_CUSTOMER) ||
                 isCurrentUserCustomer && entity.authority == ROLE_CUSTOMER
@@ -232,7 +247,8 @@ class MongoUserService(
             ?.also { existingUserWithPhone ->
                 if (existingUserWithPhone.id != userUpdate.userId) throw UserPhoneTakenException(userUpdate.phoneNumber)
             }
-        val canUpdateAuthority = (isCurrentUserAdmin && userUpdate.authority == ROLE_EDITOR) ||
+        val canUpdateAuthority =
+            (isCurrentUserAdmin && userUpdate.authority == ROLE_EDITOR) ||
                 (isCurrentUserSuperAdmin && userUpdate.authority == ROLE_ADMIN)
 
         entity.apply {
@@ -252,27 +268,38 @@ class MongoUserService(
             .also { logger.debug("User with userId: ${it.userId} was successfully updated") }
     }
 
-    override suspend fun updateUserPortrait(filePart: FilePart, userId: String): String {
-        val userEntity = userRepository.findById(userId).awaitSingleOrNull()
-            ?: throw UserNotFoundException(userId)
+    override suspend fun updateUserPortrait(
+        filePart: FilePart,
+        userId: String,
+    ): String {
+        val userEntity =
+            userRepository.findById(userId).awaitSingleOrNull()
+                ?: throw UserNotFoundException(userId)
 
         userEntity.portraitUrl = uploadPortrait(filePart)
         return userRepository.save(userEntity).awaitSingle().portraitUrl!!
     }
 
     override suspend fun deleteUserPortrait(userId: String) {
-        val userEntity = userRepository.findById(userId).awaitSingleOrNull()
-            ?: throw UserNotFoundException(userId)
+        val userEntity =
+            userRepository.findById(userId).awaitSingleOrNull()
+                ?: throw UserNotFoundException(userId)
 
         userEntity.portraitUrl = null
         userRepository.save(userEntity).awaitSingle()
     }
 
-    override suspend fun getStaffUsers(pageRequest: PageRequest, query: String): Page<User> {
+    override suspend fun getStaffUsers(
+        pageRequest: PageRequest,
+        query: String,
+    ): Page<User> {
         return searchUsers(pageRequest, query, listOf(ROLE_ADMIN, ROLE_EDITOR))
     }
 
-    override suspend fun getCustomerUsers(pageRequest: PageRequest, query: String): Page<User> {
+    override suspend fun getCustomerUsers(
+        pageRequest: PageRequest,
+        query: String,
+    ): Page<User> {
         return searchUsers(pageRequest, query, listOf(ROLE_CUSTOMER))
     }
 
@@ -292,9 +319,9 @@ class MongoUserService(
 
     override suspend fun blockUser(userId: String) {
         logger.debug("Blocking user with userId: $userId")
-        val entity = userRepository.findById(userId).awaitFirstOrNull()
-            ?: throw UserNotFoundException(userId)
-
+        val entity =
+            userRepository.findById(userId).awaitFirstOrNull()
+                ?: throw UserNotFoundException(userId)
 
         entity.blocked = true
         entity.updatedAt = Instant.now()
@@ -305,8 +332,9 @@ class MongoUserService(
 
     override suspend fun deleteUser(userId: String) {
         logger.debug("Deleting user with userId: $userId")
-        val entity = userRepository.findById(userId).awaitFirstOrNull()
-            ?: throw UserNotFoundException(userId)
+        val entity =
+            userRepository.findById(userId).awaitFirstOrNull()
+                ?: throw UserNotFoundException(userId)
 
         entity.deleted = true
         entity.updatedAt = Instant.now()
@@ -322,9 +350,13 @@ class MongoUserService(
             .toList()
     }
 
-    override suspend fun changePassword(userId: String, passwordUpdate: PasswordUpdate) {
-        val entity = userRepository.findById(userId).awaitFirstOrNull()
-            ?: throw UserNotFoundException(userId)
+    override suspend fun changePassword(
+        userId: String,
+        passwordUpdate: PasswordUpdate,
+    ) {
+        val entity =
+            userRepository.findById(userId).awaitFirstOrNull()
+                ?: throw UserNotFoundException(userId)
         if (!passwordEncoder.matches(passwordUpdate.oldPassword, entity.password)) {
             throw WrongPasswordException()
         }
@@ -336,7 +368,11 @@ class MongoUserService(
         userRepository.save(entity).awaitSingle()
     }
 
-    private suspend fun searchUsers(pageRequest: PageRequest, query: String, authorities: List<String>): Page<User> {
+    private suspend fun searchUsers(
+        pageRequest: PageRequest,
+        query: String,
+        authorities: List<String>,
+    ): Page<User> {
         return userRepository
             .findUsersByAuthoritiesAndFirstNameOrLastnameOrEmailOrPhoneNumber(authorities, query, pageRequest)
             .map { it.toDto() }

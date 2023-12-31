@@ -2,9 +2,6 @@ package com.livadoo.services.inventory.services.mongodb
 
 import com.livadoo.library.security.utils.currentAuthUser
 import com.livadoo.proxy.storage.StorageServiceProxy
-import com.livadoo.services.common.exceptions.NotAllowedException
-import com.livadoo.services.common.exceptions.NotAuthenticatedException
-import com.livadoo.services.common.utils.extractContent
 import com.livadoo.services.inventory.data.Category
 import com.livadoo.services.inventory.data.CategoryCreate
 import com.livadoo.services.inventory.data.CategoryEdit
@@ -13,6 +10,9 @@ import com.livadoo.services.inventory.services.CategoryService
 import com.livadoo.services.inventory.services.mongodb.entity.CategoryEntity
 import com.livadoo.services.inventory.services.mongodb.entity.toDto
 import com.livadoo.services.inventory.services.mongodb.repository.CategoryRepository
+import com.livadoo.utils.exception.ForbiddenException
+import com.livadoo.utils.exception.UnauthorizedException
+import com.livadoo.utils.spring.extractContent
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -28,9 +28,11 @@ class MongoCategoryService(
     private val categoryRepository: CategoryRepository,
     private val storageService: StorageServiceProxy,
 ) : CategoryService {
-
-    override suspend fun createCategory(categoryCreate: CategoryCreate, filePart: FilePart): Category {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
+    override suspend fun createCategory(
+        categoryCreate: CategoryCreate,
+        filePart: FilePart,
+    ): Category {
+        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException("You are not authenticated")
 
         return if (currentUser.isStaff) {
             val pictureUrl = uploadCategoryImage(filePart)
@@ -39,57 +41,64 @@ class MongoCategoryService(
 
             categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
         } else {
-            throw NotAllowedException()
+            throw ForbiddenException("Access denied")
         }
     }
 
     override suspend fun updateCategory(categoryEdit: CategoryEdit): Category {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
+        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException("You are not authenticated")
 
         return if (currentUser.isStaff) {
             val (name, description, parentId, active, categoryId) = categoryEdit
             parentId?.let { categoryRepository.findById(it).awaitSingleOrNull() ?: throw CategoryNotFoundException(it) }
 
-            val categoryEntity = categoryRepository.findById(categoryId).awaitSingleOrNull()
-                ?.apply {
-                    this.name = name
-                    this.description = description
-                    this.active = active
-                    this.parentId = parentId
-                    updatedAt = Instant.now()
-                    updatedBy = currentUser.username
-                }
-                ?: throw CategoryNotFoundException(categoryId)
+            val categoryEntity =
+                categoryRepository.findById(categoryId).awaitSingleOrNull()
+                    ?.apply {
+                        this.name = name
+                        this.description = description
+                        this.active = active
+                        this.parentId = parentId
+                        updatedAt = Instant.now()
+                        updatedBy = currentUser.username
+                    }
+                    ?: throw CategoryNotFoundException(categoryId)
 
             categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle()
         } else {
-            throw NotAllowedException()
+            throw ForbiddenException("Access denied")
         }
     }
 
-    override suspend fun updateCategoryPicture(categoryId: String, filePart: FilePart): String {
-        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw NotAuthenticatedException()
+    override suspend fun updateCategoryPicture(
+        categoryId: String,
+        filePart: FilePart,
+    ): String {
+        val currentUser = currentAuthUser.awaitSingleOrNull() ?: throw UnauthorizedException("You are not authenticated")
 
         return if (currentUser.isStaff) {
-            val categoryEntity = categoryRepository.findById(categoryId).awaitSingleOrNull()
-                ?: throw CategoryNotFoundException(categoryId)
+            val categoryEntity =
+                categoryRepository.findById(categoryId).awaitSingleOrNull()
+                    ?: throw CategoryNotFoundException(categoryId)
 
             categoryEntity.pictureUrl = uploadCategoryImage(filePart)
 
             categoryRepository.save(categoryEntity).map { it.toDto() }.awaitSingle().pictureUrl
         } else {
-            throw NotAllowedException()
+            throw ForbiddenException("Access denied")
         }
     }
 
     override suspend fun getCategory(categoryId: String): Category {
-        val category = categoryRepository.findById(categoryId).map { it.toDto() }.awaitSingleOrNull()
-            ?: throw CategoryNotFoundException(categoryId)
+        val category =
+            categoryRepository.findById(categoryId).map { it.toDto() }.awaitSingleOrNull()
+                ?: throw CategoryNotFoundException(categoryId)
 
         return category.apply {
             parentId?.let {
-                val parent = categoryRepository.findById(parentId).awaitSingleOrNull()
-                    ?: throw CategoryNotFoundException(parentId)
+                val parent =
+                    categoryRepository.findById(parentId).awaitSingleOrNull()
+                        ?: throw CategoryNotFoundException(parentId)
                 parentName = parent.name
             }
         }
@@ -101,13 +110,17 @@ class MongoCategoryService(
             ?: throw CategoryNotFoundException(categoryId)
     }
 
-    override suspend fun getCategories(pageable: Pageable, query: String): Page<Category> {
-        val categoriesTuple = categoryRepository
-            .findByNameLikeIgnoreCase(query, pageable)
-            .map { it.toDto() }
-            .collectList()
-            .zipWith(categoryRepository.countByNameLikeIgnoreCase(query))
-            .awaitFirst()
+    override suspend fun getCategories(
+        pageable: Pageable,
+        query: String,
+    ): Page<Category> {
+        val categoriesTuple =
+            categoryRepository
+                .findByNameLikeIgnoreCase(query, pageable)
+                .map { it.toDto() }
+                .collectList()
+                .zipWith(categoryRepository.countByNameLikeIgnoreCase(query))
+                .awaitFirst()
         val categories = categoriesTuple.t1
         val categoriesCount = categoriesTuple.t2
 
@@ -115,17 +128,21 @@ class MongoCategoryService(
 
         categories.mapNotNull { it.parentId }.forEach { parentCategoryIds.add(it) }
 
-        val parentCategories = if (parentCategoryIds.isNotEmpty()) {
-            categoryRepository.findAllById(parentCategoryIds).collectList().awaitFirst()
-        } else emptyList()
+        val parentCategories =
+            if (parentCategoryIds.isNotEmpty()) {
+                categoryRepository.findAllById(parentCategoryIds).collectList().awaitFirst()
+            } else {
+                emptyList()
+            }
 
         if (parentCategories.isNotEmpty()) {
             categories.map { category ->
                 category.apply {
-                    parentName = parentId?.let {
-                        parentCategories.find { parent -> parent.id == category.parentId }?.name
-                            ?: throw CategoryNotFoundException(parentId)
-                    }
+                    parentName =
+                        parentId?.let {
+                            parentCategories.find { parent -> parent.id == category.parentId }?.name
+                                ?: throw CategoryNotFoundException(parentId)
+                        }
                 }
             }
         }

@@ -18,7 +18,6 @@ dependencies {
     implementation(projects.customerService)
     implementation(projects.storageService)
     implementation(projects.inventoryService)
-    implementation(projects.common)
     implementation(projects.roleService)
     implementation(projects.permissionService)
 

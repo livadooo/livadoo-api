@@ -16,9 +16,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class MongoCustomerService(
-    private val customerRepository: CustomerRepository
-): CustomerService {
-
+    private val customerRepository: CustomerRepository,
+) : CustomerService {
     private val logger = LoggerFactory.getLogger(MongoCustomerService::class.java)
 
     override suspend fun createCustomer(customerCreate: CustomerCreate) {
@@ -26,7 +25,6 @@ class MongoCustomerService(
         val entity = CustomerEntity(customerCreate.userId, customerId, createdBy = SYSTEM_ACCOUNT)
         val customer = customerRepository.save(entity).map { it.toDto() }.awaitSingle()
         logger.debug("Customer created with id: ${customer.customerId}")
-
     }
 
     override suspend fun updateCustomer(customerCreate: CustomerCreate) {
@@ -38,5 +36,4 @@ class MongoCustomerService(
             ?.toDto()
             ?: throw CustomerNotFoundException(customerId)
     }
-
 }
