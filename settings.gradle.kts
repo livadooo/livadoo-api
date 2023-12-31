@@ -20,8 +20,9 @@ include(
     "storage-service-proxy",
     "customer-service-proxy",
     "inventory-service-proxy",
-    "utils:user-utils",
     "utils:exception-utils",
+    "utils:spring-utils",
+    "utils:user-utils",
     "role-service",
     "permission-service",
 )
