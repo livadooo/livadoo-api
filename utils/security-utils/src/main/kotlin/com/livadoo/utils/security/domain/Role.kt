@@ -1,5 +1,10 @@
 package com.livadoo.utils.security.domain
 
+enum class Role {
+    ROLE_SYSTEM_ADMINISTRATOR,
+    SYSTEM_ACCOUNT,
+}
+
 const val ROLE_ANONYMOUS = "ROLE_ANONYMOUS"
 const val ROLE_ADMIN = "ROLE_ADMIN"
 const val ROLE_SUPER_ADMIN = "ROLE_SUPER_ADMIN"

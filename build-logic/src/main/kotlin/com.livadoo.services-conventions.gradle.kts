@@ -26,6 +26,7 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("com.google.code.gson:gson:2.10")
+	implementation("io.github.wimdeblauwe:error-handling-spring-boot-starter:4.2.0")
 
 	// Testing libraries
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
