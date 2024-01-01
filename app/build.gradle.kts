@@ -12,6 +12,8 @@ group = "com.livadoo.services"
 version = "0.0.1"
 
 dependencies {
+    implementation(projects.accountService)
+    implementation(projects.authService)
     implementation(projects.notificationService)
     implementation(projects.userService)
     implementation(projects.customerService)

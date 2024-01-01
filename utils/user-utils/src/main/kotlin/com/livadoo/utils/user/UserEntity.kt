@@ -34,7 +34,7 @@ data class UserEntity(
 )
 
 fun UserEntity.toDto() =
-    User(
+    UserDto(
         firstName = firstName,
         lastName = lastName,
         phoneNumber = phoneNumber,

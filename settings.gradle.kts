@@ -8,6 +8,9 @@ pluginManagement {
 
 include(
     "app",
+    "account-service",
+    "auth-service",
+    "auth-service-proxy",
     "user-service",
     "user-service-proxy",
     "shared",
