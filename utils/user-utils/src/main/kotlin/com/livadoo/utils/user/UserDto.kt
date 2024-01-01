@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
 import java.time.Instant
 
-data class User(
+data class UserDto(
     @field:Size(message = "INVALID_FIRSTNAME", max = 50, min = 2)
     var firstName: String,
     @field:Size(message = "INVALID_LASTNAME", max = 50, min = 2)
