@@ -1,3 +1,3 @@
-package com.livadoo.services.account
+package com.livadoo.services.auth
 
 data class RefreshToken(val token: String)

@@ -25,7 +25,7 @@ livadoo:
     customer-auth:
       expiration-time-in-minutes: 15
 
-  password-reset-key:
+  password-reset:
     validity-time-in-hours: 24
 
 

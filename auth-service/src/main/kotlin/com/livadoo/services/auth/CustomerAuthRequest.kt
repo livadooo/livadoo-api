@@ -1,4 +1,4 @@
-package com.livadoo.services.account
+package com.livadoo.services.auth
 
 import jakarta.validation.constraints.NotBlank
 

@@ -1,10 +1,9 @@
 package com.livadoo.proxy.user
 
-import com.livadoo.proxy.user.model.User
+import com.livadoo.utils.user.UserDto
 
 interface UserServiceProxy {
+    suspend fun getUserById(userId: String): UserDto
 
-	suspend fun getUser(userId: String): User
-
-	suspend fun getUsersByIds(userIds: List<String>): List<User>
+    suspend fun getUsersByIds(userIds: List<String>): List<UserDto>
 }

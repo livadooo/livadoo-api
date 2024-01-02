@@ -3,8 +3,9 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.utils.springUtils)
     implementation(projects.utils.securityUtils)
+    implementation(projects.utils.springUtils)
+    implementation(projects.utils.userUtils)
     implementation(project(":customer-service-proxy"))
     implementation(project(":notification-service-proxy"))
     implementation(project(":storage-service-proxy"))

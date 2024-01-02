@@ -5,21 +5,20 @@ import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.security.Key
 
-private const val AUTHORITIES_KEY = "roles"
-private const val AUTHORITIES_DELIMITER = ","
+private const val ROLES_KEY = "roles"
+private const val PERMISSIONS_KEY = "permissions"
+private const val DELIMITER = ","
 
 class JwtValidator(
     secret: String,
 ) {
-    private val logger: Logger = LoggerFactory.getLogger(JwtValidator::class.java)
-
+    private val logger = LoggerFactory.getLogger(JwtValidator::class.java)
     private val key: Key
     private val jwtParser: JwtParser
 
@@ -32,16 +31,24 @@ class JwtValidator(
     fun getAuthentication(authToken: String): Authentication {
         val claims = jwtParser.parseSignedClaims(authToken).payload
 
-        val authorities =
-            claims[AUTHORITIES_KEY]
+        val roles =
+            claims[ROLES_KEY]
                 .toString()
-                .split(AUTHORITIES_DELIMITER)
+                .split(DELIMITER)
+                .filter { authority -> authority.trim().isNotEmpty() }
+
+        val permissions =
+            claims[PERMISSIONS_KEY]
+                .toString()
+                .split(DELIMITER)
+                .toMutableList()
+                .apply { addAll(roles) }
                 .filter { authority -> authority.trim().isNotEmpty() }
                 .map { SimpleGrantedAuthority(it) }
-                .toList()
-        val principal = AuthUser(claims.subject, "", authorities)
 
-        return UsernamePasswordAuthenticationToken(principal, authToken, authorities)
+        val principal = AuthUser(username = claims.subject, password = "", permissions = permissions, roles = roles)
+
+        return UsernamePasswordAuthenticationToken(principal, authToken, permissions)
     }
 
     fun validateToken(authToken: String): Boolean {
