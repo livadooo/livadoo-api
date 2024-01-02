@@ -25,9 +25,31 @@ livadoo:
     customer-auth:
       expiration-time-in-minutes: 15
 
-  password-reset:
-    validity-time-in-hours: 24
+  user:
+    password-reset:
+      validity-time-in-hours: 24
 
+  notification:
+    mail:
+      active-provider: sendgrid
+
+      zeptomail:
+        api-url:
+        authorization-header:
+        bounce-address:
+
+      sendgrid:
+        api-key:
+
+    twilio:
+      account:
+        sid:
+        token:
+
+      messaging:
+        content-sid-en: content-sid-en
+        content-sid-fr: content-sid-fr
+        messaging-service-id: messaging-service-id
 
 spring:
   data:
@@ -49,13 +71,6 @@ spring:
       mail:
         smtp:
           ssl.trust: # trustee
-
-
-notification:
-  zeptomail:
-    api-url:
-    authorization-header:
-    bounce-address:
 
 
 error:

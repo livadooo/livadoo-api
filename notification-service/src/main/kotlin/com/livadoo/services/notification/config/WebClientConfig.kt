@@ -6,18 +6,18 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
 @Component
-class SmsWebClientsConfig(
+class WebClientConfig(
     private val webClientBuilder: WebClient.Builder,
-    private val zeptoMailProperties: ZeptoMailProperties
+    private val notificationProperties: NotificationProperties,
 ) {
     @Bean
     fun zeptoMailWebClient(): WebClient {
         return webClientBuilder
-            .baseUrl(zeptoMailProperties.apiUrl)
+            .baseUrl(notificationProperties.mail.zeptomail.apiUrl)
             .defaultHeaders {
                 it.contentType = MediaType.APPLICATION_JSON
                 it.accept = listOf(MediaType.APPLICATION_JSON)
-                it.set("Authorization", zeptoMailProperties.authorizationHeader)
+                it.set("Authorization", notificationProperties.mail.zeptomail.authorizationHeader)
             }
             .build()
     }

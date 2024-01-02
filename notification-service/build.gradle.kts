@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+	implementation(libs.sendgrid)
+	implementation(libs.twilio)
 	implementation(libs.spring.boot.mail)
 	implementation(libs.spring.boot.thymeleaf)
 
