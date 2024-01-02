@@ -20,6 +20,7 @@ dependencies {
     implementation(projects.storageService)
     implementation(projects.inventoryService)
     implementation(projects.roleService)
+    implementation(projects.otpService)
     implementation(projects.permissionService)
     implementation(projects.utils.securityUtils)
 

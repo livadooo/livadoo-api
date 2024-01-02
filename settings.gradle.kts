@@ -18,6 +18,8 @@ include(
     "inventory-service",
     "storage-service",
     "customer-service",
+    "otp-service",
+    "otp-service-proxy",
     "notification-service-proxy",
     "storage-service-proxy",
     "customer-service-proxy",

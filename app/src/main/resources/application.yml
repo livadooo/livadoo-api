@@ -21,6 +21,10 @@ livadoo:
       patch-bucket: false
       path: path
 
+  otp:
+    customer-auth:
+      expiration-time-in-minutes: 15
+
   password-reset-key:
     validity-time-in-hours: 24
 
