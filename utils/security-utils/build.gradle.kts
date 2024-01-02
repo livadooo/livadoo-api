@@ -13,13 +13,12 @@ dependencyManagement {
 }
 
 dependencies {
-	implementation(projects.utils.exceptionUtils)
 	implementation(libs.jjwt.api)
 	implementation(libs.jjwt.impl)
 	implementation(libs.jjwt.jackson)
-	implementation(libs.kotlin.reflect)
-	implementation(libs.kotlin.stdlib)
+	implementation(libs.kotlinx.coroutines.reactive)
 	implementation(libs.spring.boot.security)
 	implementation(libs.spring.boot.webflux)
-	implementation(libs.kotlinx.coroutines.reactive)
+
+	implementation(projects.utils.exceptionUtils)
 }

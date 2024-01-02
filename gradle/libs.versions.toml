@@ -1,4 +1,5 @@
 [versions]
+azure-storage-blob = "5.8.0"
 jjwt = "0.12.3"
 kotlin = "1.9.21"
 kotlin-allopen = "1.9.22"
@@ -7,6 +8,7 @@ spring-boot = "3.2.1"
 spring-dependency-management = "1.1.4"
 
 [libraries]
+azure-storage-blob = { module = "com.azure.spring:spring-cloud-azure-starter-storage-blob", version.ref = "azure-storage-blob" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "spring-boot" }
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }

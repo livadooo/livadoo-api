@@ -8,6 +8,6 @@ plugins {
 
 dependencies {
 	implementation(libs.error.handling)
-	implementation(libs.spring.boot.webflux)
 	implementation(libs.kotlinx.coroutines.reactive)
+	implementation(libs.spring.boot.webflux)
 }
