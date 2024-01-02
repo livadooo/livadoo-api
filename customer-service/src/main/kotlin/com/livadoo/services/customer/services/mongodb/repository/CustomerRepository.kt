@@ -1,20 +1,10 @@
 package com.livadoo.services.customer.services.mongodb.repository
 
 import com.livadoo.services.customer.services.mongodb.entity.CustomerEntity
-import org.springframework.data.domain.Pageable
-import org.springframework.data.mongodb.repository.Query
-import org.springframework.data.repository.reactive.ReactiveCrudRepository
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 
-interface CustomerRepository : ReactiveCrudRepository<CustomerEntity, String> {
+interface CustomerRepository : CoroutineCrudRepository<CustomerEntity, String> {
+    suspend fun findByUserId(userId: String): CustomerEntity?
 
-    fun findByUserId(userId: String): Mono<CustomerEntity>
-
-    fun findAllByUserIdIn(userIds: List<String>): Flux<CustomerEntity>
-
-    fun findByCustomerId(customerId: String): Mono<CustomerEntity>
-
-    @Query("{}")
-    fun findCustomers(pageable: Pageable): Flux<CustomerEntity>
+    suspend fun findByCustomerId(customerId: String): CustomerEntity?
 }

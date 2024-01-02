@@ -29,5 +29,7 @@ include(
     "utils:spring-utils",
     "utils:user-utils",
     "role-service",
+    "role-service-proxy",
     "permission-service",
+    "permission-service-proxy",
 )

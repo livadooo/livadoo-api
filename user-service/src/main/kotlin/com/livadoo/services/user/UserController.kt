@@ -26,21 +26,24 @@ class UserController(
 ) {
     @PostMapping("/staff")
     suspend fun createStaffUser(
-        @RequestBody @Valid user: StaffUserCreate,
-    ) {
+        @RequestBody @Valid
+        user: StaffUserCreate,
+    ): UserDto {
         return userService.createStaffUser(user)
     }
 
     @PostMapping("/customers")
     suspend fun createCustomerUser(
-        @RequestBody @Valid customerUserCreate: CustomerUserCreate,
-    ) {
+        @RequestBody @Valid
+        customerUserCreate: CustomerUserCreate,
+    ): UserDto {
         return userService.createCustomerUser(customerUserCreate)
     }
 
     @PutMapping
     suspend fun updateUser(
-        @RequestBody @Validated user: UserUpdate,
+        @RequestBody @Validated
+        user: UserUpdate,
     ): UserDto {
         return userService.updateUser(user)
     }
@@ -71,7 +74,7 @@ class UserController(
         @PathVariable userId: String,
         @RequestBody passwordUpdate: PasswordUpdate,
     ) {
-        return userService.changePassword(userId, passwordUpdate)
+        return userService.updateStaffPassword(userId, passwordUpdate)
     }
 
     @PutMapping("/{userId}/portrait")

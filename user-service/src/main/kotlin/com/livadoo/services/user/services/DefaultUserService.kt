@@ -2,33 +2,35 @@ package com.livadoo.services.user.services
 
 import com.livadoo.proxy.customer.CustomerServiceProxy
 import com.livadoo.proxy.notification.NotificationServiceProxy
+import com.livadoo.proxy.notification.ProxyLanguage
+import com.livadoo.proxy.permission.PermissionServiceProxy
+import com.livadoo.proxy.role.RoleServiceProxy
 import com.livadoo.proxy.storage.StorageServiceProxy
-import com.livadoo.services.user.PasswordResetProperties
 import com.livadoo.services.user.data.CustomerUserCreate
 import com.livadoo.services.user.data.PasswordUpdate
 import com.livadoo.services.user.data.StaffUserCreate
 import com.livadoo.services.user.data.UserUpdate
-import com.livadoo.services.user.exceptions.NotAllowedToEditUserException
+import com.livadoo.services.user.exceptions.DuplicateEmailException
+import com.livadoo.services.user.exceptions.DuplicatePhoneNumberException
+import com.livadoo.services.user.exceptions.InvalidStaffRolesException
 import com.livadoo.services.user.exceptions.SimilarPasswordException
-import com.livadoo.services.user.exceptions.UserEmailTakenException
 import com.livadoo.services.user.exceptions.UserNotFoundException
-import com.livadoo.services.user.exceptions.UserPhoneTakenException
 import com.livadoo.services.user.exceptions.WrongPasswordException
+import com.livadoo.services.user.phone.PhoneNumberValidationService
+import com.livadoo.shared.extension.containsExceptionKey
+import com.livadoo.utils.exception.InternalErrorException
 import com.livadoo.utils.security.config.AppSecurityContext
-import com.livadoo.utils.security.domain.SYSTEM_ACCOUNT
 import com.livadoo.utils.spring.extractContent
+import com.livadoo.utils.user.Language
 import com.livadoo.utils.user.UserDto
+import com.livadoo.utils.user.UserEntity
+import com.livadoo.utils.user.buildUserId
 import com.livadoo.utils.user.toDto
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.slf4j.LoggerFactory
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import java.time.Instant
+import java.time.Clock
 import java.util.Base64
 import java.util.UUID
 
@@ -37,159 +39,146 @@ class DefaultUserService(
     private val userRepository: UserRepository,
     private val notificationService: NotificationServiceProxy,
     private val passwordEncoder: PasswordEncoder,
-    private val passwordResetProperties: PasswordResetProperties,
     private val storageService: StorageServiceProxy,
-    private val customerService: CustomerServiceProxy,
+    private val customerServiceProxy: CustomerServiceProxy,
     private val securityContext: AppSecurityContext,
+    private val permissionServiceProxy: PermissionServiceProxy,
+    private val roleServiceProxy: RoleServiceProxy,
+    private val phoneNumberValidationService: PhoneNumberValidationService,
+    private val clock: Clock,
 ) : UserService {
-    private val logger = LoggerFactory.getLogger(DefaultUserService::class.java)
+    override suspend fun createCustomerUser(customerUserCreate: CustomerUserCreate): UserDto {
+        val phoneNumber = phoneNumberValidationService.validate(
+            phoneNumber = customerUserCreate.phoneNumber,
+            regionCode = customerUserCreate.regionCode,
+        )
 
-    override suspend fun createCustomerUser(customerUserCreate: CustomerUserCreate) {
-        TODO("Not yet implemented")
+        var userEntity = UserEntity(
+            firstName = customerUserCreate.firstName,
+            lastName = customerUserCreate.lastName,
+            language = Language.FR,
+            userId = buildUserId,
+            activated = true,
+            phoneNumber = phoneNumber,
+            email = null,
+            roleIds = emptyList(),
+            permissionIds = emptyList(),
+            password = null,
+        )
+
+        userEntity = saveUser(userEntity)
+
+        customerServiceProxy.createCustomer(
+            userId = userEntity.userId,
+            createdBy = securityContext.getCurrentUserIdOrDefault(),
+        )
+        return userEntity.toDto()
     }
 
-    override suspend fun createStaffUser(staffUserCreate: StaffUserCreate) {
-        TODO("Not yet implemented")
-    }
-
-    private suspend fun checkEmailAndPassword(
-        email: String,
-        phoneNumber: String,
-    ) {
-        userRepository
-            .findByEmailIgnoreCase(email).awaitSingleOrNull()
-            ?.also { user ->
-                if (!user.verified) {
-                    userRepository.delete(user).awaitSingleOrNull()
-                } else {
-                    throw UserEmailTakenException(email)
-                }
-            }
-
-        userRepository
-            .findByPhoneNumber(phoneNumber).awaitSingleOrNull()
-            ?.also { user ->
-                if (!user.verified) {
-                    userRepository.delete(user).awaitSingleOrNull()
-                } else {
-                    throw UserPhoneTakenException(phoneNumber)
-                }
-            }
-    }
-
-    override suspend fun verifyAccount(key: String): UserDto {
-        TODO("Not yet implemented")
+    override suspend fun createStaffUser(staffUserCreate: StaffUserCreate): UserDto {
+        val phoneNumber = phoneNumberValidationService.validate(
+            phoneNumber = staffUserCreate.phoneNumber,
+            regionCode = staffUserCreate.regionCode,
+        )
+        val roleIds = roleServiceProxy.getRolesByIds(staffUserCreate.roleIds)
+        if (roleIds.size != staffUserCreate.roleIds.size) {
+            throw InvalidStaffRolesException()
+        }
+        val permissionIds = permissionServiceProxy.getBasePermissionsByRoles(roleIds)
+        val password = randomPassword
+        val userEntity = UserEntity(
+            firstName = staffUserCreate.firstName,
+            lastName = staffUserCreate.lastName,
+            language = Language.FR,
+            userId = buildUserId,
+            phoneNumber = phoneNumber,
+            email = staffUserCreate.email,
+            activated = true,
+            roleIds = roleIds,
+            permissionIds = permissionIds,
+            password = passwordEncoder.encode(password),
+        )
+        notificationService.notifyStaffAccountCreated(
+            firstName = staffUserCreate.firstName,
+            email = staffUserCreate.email,
+            password = password,
+            language = ProxyLanguage.valueOf(userEntity.language.name),
+        )
+        return saveUser(userEntity).toDto()
     }
 
     override suspend fun updateUser(userUpdate: UserUpdate): UserDto {
-        logger.debug("Updating user with userId: ${userUpdate.userId}")
+        val userEntity = getUser(userUpdate.userId)
 
-        val isGranted =
-            with(securityContext) {
-                getCurrentUserId() == userUpdate.userId || currentUserHasPermissions(emptyList())
-            }
-        if (!isGranted) throw NotAllowedToEditUserException()
-
-        val entity =
-            userRepository.findById(userUpdate.userId).awaitSingleOrNull()
-                ?: throw UserNotFoundException(userUpdate.userId)
-
-        userRepository.findByPhoneNumber(userUpdate.phoneNumber).awaitSingleOrNull()
-            ?.also { existingUserWithPhone ->
-                if (existingUserWithPhone.id != userUpdate.userId) throw UserPhoneTakenException(userUpdate.phoneNumber)
-            }
-
-        entity.apply {
+        userEntity.apply {
             firstName = userUpdate.firstName
             lastName = userUpdate.lastName
-            phoneNumber = userUpdate.phoneNumber
             address = userUpdate.address
             city = userUpdate.city
             country = userUpdate.country
-            updatedAt = Instant.now()
-            updatedBy = userUpdate.updatedBy
+            updatedAt = clock.instant()
+            updatedBy = securityContext.getCurrentUserId()
         }
 
-        return userRepository.save(entity).awaitSingle()
-            .toDto()
-            .also { logger.debug("UserDto with userId: ${it.userId} was successfully updated") }
+        return saveUser(userEntity).toDto()
     }
 
-    override suspend fun updateUserPortrait(
-        filePart: FilePart,
-        userId: String,
-    ): String {
-        val userEntity =
-            userRepository.findById(userId).awaitSingleOrNull()
-                ?: throw UserNotFoundException(userId)
-
+    override suspend fun updateUserPortrait(filePart: FilePart, userId: String): String {
+        val userEntity = getUser(userId)
         userEntity.photoUrl = uploadPortrait(filePart)
-        return userRepository.save(userEntity).awaitSingle().photoUrl!!
+        return saveUser(userEntity).photoUrl!!
     }
 
     override suspend fun deleteUserPortrait(userId: String) {
-        val userEntity =
-            userRepository.findById(userId).awaitSingleOrNull()
-                ?: throw UserNotFoundException(userId)
+        val userEntity = userRepository.findById(userId)
+            ?: throw UserNotFoundException(userId)
 
         userEntity.photoUrl = null
-        userRepository.save(userEntity).awaitSingle()
-    }
-
-    override suspend fun getUsersByIds(userIds: List<String>): List<UserDto> {
-        return userRepository.findAllByIdIn(userIds)
-            .map { it.toDto() }
-            .asFlow()
-            .toList()
+        saveUser(userEntity)
     }
 
     override suspend fun getUserById(userId: String): UserDto {
-        return userRepository.findById(userId).map { it.toDto() }.awaitFirstOrNull()
-            ?: throw UserNotFoundException(userId = userId)
+        return getUser(userId).toDto()
     }
 
     override suspend fun blockUser(userId: String) {
-        logger.debug("Blocking user with userId: $userId")
-        val entity =
-            userRepository.findById(userId).awaitFirstOrNull()
-                ?: throw UserNotFoundException(userId)
+        val userEntity = userRepository.findById(userId)
+            ?: throw UserNotFoundException(userId)
 
-        entity.blocked = true
-        entity.updatedAt = Instant.now()
-        entity.updatedBy = SYSTEM_ACCOUNT
-        userRepository.save(entity).awaitSingle()
-        logger.debug("UserDto with userId: $userId blocked")
+        userEntity.apply {
+            blocked = true
+            updatedAt = clock.instant()
+            updatedBy = securityContext.getCurrentUserId()
+        }
+        saveUser(userEntity)
     }
 
     override suspend fun deleteUser(userId: String) {
-        logger.debug("Deleting user with userId: $userId")
-        val entity =
-            userRepository.findById(userId).awaitFirstOrNull()
-                ?: throw UserNotFoundException(userId)
+        val userEntity = userRepository.findById(userId)
+            ?: throw UserNotFoundException(userId)
 
-        entity.deleted = true
-        entity.updatedAt = Instant.now()
-        entity.updatedBy = SYSTEM_ACCOUNT
-        userRepository.save(entity).awaitSingle()
-        logger.debug("UserDto with userId: $userId deleted")
+        userEntity.apply {
+            deleted = true
+            updatedAt = clock.instant()
+            updatedBy = securityContext.getCurrentUserId()
+        }
+        saveUser(userEntity)
     }
 
-    override suspend fun changePassword(
+    override suspend fun updateStaffPassword(
         userId: String,
         passwordUpdate: PasswordUpdate,
     ) {
-        val entity =
-            userRepository.findById(userId).awaitFirstOrNull()
-                ?: throw UserNotFoundException(userId)
-        if (!passwordEncoder.matches(passwordUpdate.oldPassword, entity.password)) {
+        val userEntity = getUser(userId)
+        if (!passwordEncoder.matches(passwordUpdate.oldPassword, userEntity.password)) {
             throw WrongPasswordException()
         }
-        if (passwordEncoder.matches(passwordUpdate.newPassword, entity.password)) {
+        if (passwordEncoder.matches(passwordUpdate.newPassword, userEntity.password)) {
             throw SimilarPasswordException()
         }
         val encryptedPassword = passwordEncoder.encode(passwordUpdate.newPassword)
-        entity.password = encryptedPassword
-        userRepository.save(entity).awaitSingle()
+        userEntity.password = encryptedPassword
+        saveUser(userEntity)
     }
 
     private suspend fun uploadPortrait(filePart: FilePart): String {
@@ -197,8 +186,30 @@ class DefaultUserService(
         return storageService.uploadProfilePortrait(filePart.filename(), contentType, contentBytes)
     }
 
-    fun generatePassword(): String {
-        val base64 = Base64.getEncoder().encodeToString(UUID.randomUUID().toString().toByteArray())
-        return base64.take(8)
+    val randomPassword: String
+        get() {
+            val base64 = Base64.getEncoder().encodeToString(UUID.randomUUID().toString().toByteArray())
+            return base64.take(8)
+        }
+
+    private suspend fun saveUser(userEntity: UserEntity): UserEntity {
+        return try {
+            userRepository.save(userEntity)
+        } catch (exception: DuplicateKeyException) {
+            if (exception.message!!.containsExceptionKey("userId")) {
+                saveUser(userEntity.copy(userId = buildUserId))
+            } else if (exception.message!!.containsExceptionKey("email")) {
+                throw DuplicateEmailException(userEntity.email!!)
+            } else if (exception.message!!.containsExceptionKey("phoneNumber")) {
+                throw DuplicatePhoneNumberException(userEntity.email!!)
+            } else {
+                throw InternalErrorException()
+            }
+        }
+    }
+
+    private suspend fun getUser(userId: String): UserEntity {
+        return userRepository.findByUserId(userId)
+            ?: throw UserNotFoundException(userId)
     }
 }

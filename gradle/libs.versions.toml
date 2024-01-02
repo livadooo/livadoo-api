@@ -9,6 +9,7 @@ spring-dependency-management = "1.1.4"
 
 [libraries]
 azure-storage-blob = { module = "com.azure.spring:spring-cloud-azure-starter-storage-blob", version.ref = "azure-storage-blob" }
+googlecode-libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version = "8.13.26" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "spring-boot" }
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
