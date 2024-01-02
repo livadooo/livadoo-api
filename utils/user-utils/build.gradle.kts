@@ -6,4 +6,6 @@ plugins {
 dependencies {
 	implementation(libs.spring.boot.data.mongodb.reactive)
 	implementation(libs.spring.boot.validation)
+
+	implementation(projects.shared)
 }

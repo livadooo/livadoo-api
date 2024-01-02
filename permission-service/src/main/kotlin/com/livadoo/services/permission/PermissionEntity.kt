@@ -13,6 +13,7 @@ data class PermissionEntity(
     var description: String,
     val roleId: String,
     var createdAt: Instant,
+    var base: Boolean,
     var updatedAt: Instant? = null,
     var createdBy: String,
     var updatedBy: String? = null,
@@ -22,9 +23,8 @@ data class PermissionEntity(
     var version: Int = 0,
 )
 
-fun PermissionEntity.toDto(): PermissionDto =
-    PermissionDto(
-        permission = permission,
-        description = description,
-        permissionId = id!!,
-    )
+fun PermissionEntity.toDto(): PermissionDto = PermissionDto(
+    permission = permission,
+    description = description,
+    permissionId = id!!,
+)

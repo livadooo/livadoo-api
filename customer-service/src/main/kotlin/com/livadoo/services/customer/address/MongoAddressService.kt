@@ -5,6 +5,7 @@ import com.livadoo.services.customer.address.data.AddressCreate
 import com.livadoo.services.customer.address.data.AddressEdit
 import com.livadoo.services.customer.exceptions.AddressNotFoundException
 import com.livadoo.services.customer.services.mongodb.repository.CustomerRepository
+import com.livadoo.utils.exception.InternalErrorException
 import com.livadoo.utils.security.config.AppSecurityContext
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
@@ -21,18 +22,27 @@ class MongoAddressService(
 ) : AddressService {
     override suspend fun createAddress(addressCreate: AddressCreate) {
         val (countryCode, fullName, phoneNumber, address, city, region, isDefault) = addressCreate
-        val customerEntity = customerRepository.findByUserId(securityContext.getCurrentUserId()).awaitSingle()
+        val customerEntity = customerRepository.findByUserId(securityContext.getCurrentUserId())
+            ?: throw InternalErrorException()
 
-        val addressEntity = AddressEntity(customerEntity.customerId, countryCode, fullName, phoneNumber, address, city, region, isDefault)
+        val addressEntity = AddressEntity(
+            customerId = customerEntity.customerId,
+            countryCode = countryCode,
+            fullName = fullName,
+            phoneNumber = phoneNumber,
+            address = address,
+            city = city,
+            region = region,
+            isDefault = isDefault,
+        )
 
         addressRepository.save(addressEntity).awaitSingle()
     }
 
     override suspend fun updateAddress(addressEdit: AddressEdit) {
         val addressId = addressEdit.addressId
-        val addressEntity =
-            addressRepository.findById(addressId).awaitSingleOrNull()
-                ?: throw AddressNotFoundException(addressId)
+        val addressEntity = addressRepository.findById(addressId).awaitSingleOrNull()
+            ?: throw AddressNotFoundException(addressId)
 
         addressEntity.apply {
             countryCode = addressEdit.countryCode
@@ -58,7 +68,8 @@ class MongoAddressService(
     }
 
     override suspend fun getAddresses(): List<Address> {
-        val customerEntity = customerRepository.findByUserId(securityContext.getCurrentUserId()).awaitSingle()
+        val customerEntity = customerRepository.findByUserId(securityContext.getCurrentUserId())
+            ?: throw InternalErrorException()
         return addressRepository.findByCustomerId(customerEntity.customerId)
             .map { it.toDto() }
             .asFlow()

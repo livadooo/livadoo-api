@@ -11,8 +11,4 @@ class DefaultUserServiceProxy(
     override suspend fun getUserById(userId: String): UserDto {
         return userService.getUserById(userId)
     }
-
-    override suspend fun getUsersByIds(userIds: List<String>): List<UserDto> {
-        return userService.getUsersByIds(userIds)
-    }
 }

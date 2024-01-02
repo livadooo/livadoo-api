@@ -10,13 +10,17 @@ import java.time.Instant
 data class UserEntity(
     var firstName: String,
     var lastName: String,
+    var language: Language,
     @Indexed(unique = true)
-    var phoneNumber: String,
-    var roles: List<String> = emptyList(),
-    var permissions: List<String> = emptyList(),
-    var password: String,
-    @Indexed(unique = true)
-    var email: String,
+    var userId: String,
+    @Indexed(unique = true, sparse = true)
+    var phoneNumber: String?,
+    @Indexed(unique = true, sparse = true)
+    var email: String?,
+    var roleIds: List<String>,
+    var permissionIds: List<String>,
+    var activated: Boolean,
+    var password: String?,
     var photoUrl: String? = null,
     var address: String? = null,
     var city: String? = null,
@@ -34,24 +38,25 @@ data class UserEntity(
     var version: Int = 0,
 )
 
-fun UserEntity.toDto() =
-    UserDto(
-        firstName = firstName,
-        lastName = lastName,
-        phoneNumber = phoneNumber,
-        roles = roles,
-        permissions = permissions,
-        email = email,
-        photoUrl = photoUrl,
-        address = address,
-        city = city,
-        country = country,
-        verified = verified,
-        blocked = blocked,
-        deleted = deleted,
-        createdBy = createdBy,
-        createdAt = createdAt,
-        updatedBy = updatedBy,
-        updatedAt = updatedAt,
-        userId = id!!,
-    )
+fun UserEntity.toDto() = UserDto(
+    firstName = firstName,
+    lastName = lastName,
+    phoneNumber = phoneNumber,
+    roles = roleIds,
+    permissions = permissionIds,
+    email = email,
+    photoUrl = photoUrl,
+    address = address,
+    city = city,
+    country = country,
+    verified = verified,
+    blocked = blocked,
+    deleted = deleted,
+    createdBy = createdBy,
+    createdAt = createdAt,
+    updatedBy = updatedBy,
+    updatedAt = updatedAt,
+    userId = userId,
+    language = language,
+    activated = activated,
+)

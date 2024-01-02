@@ -6,6 +6,8 @@ import com.livadoo.services.role.exception.RoleNotFoundException
 import com.livadoo.shared.extension.containsExceptionKey
 import com.livadoo.utils.exception.InternalErrorException
 import com.livadoo.utils.security.config.AppSecurityContext
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
 import java.time.Clock
@@ -40,6 +42,12 @@ class DefaultRoleService(
             updatedBy = securityContext.getCurrentUserId()
         }
         return handleSave(roleEntity).toDto()
+    }
+
+    override suspend fun getRolesByIds(roleIds: List<String>): List<String> {
+        return roleRepository.findAllById(roleIds)
+            .map { it.id!! }
+            .toList()
     }
 
     private suspend fun handleSave(roleEntity: RoleEntity): RoleEntity {

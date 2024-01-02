@@ -36,15 +36,14 @@ class UserDetailsService(
             throw UnauthorizedException("Account not verified")
         }
 
-        val permissions =
-            userEntity.permissions
-                .map { SimpleGrantedAuthority(it) }
+        val permissions = userEntity.permissionIds
+            .map { SimpleGrantedAuthority(it) }
 
         return AuthUser(
-            username = userEntity.id!!,
-            userEntity.password,
+            username = userEntity.userId,
+            userEntity.password!!,
             permissions = permissions,
-            roles = userEntity.roles,
+            roles = userEntity.roleIds,
         )
     }
 }

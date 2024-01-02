@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.permissionServiceProxy)
     implementation(projects.shared)
 
     implementation(projects.utils.securityUtils)

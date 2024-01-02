@@ -3,10 +3,14 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.googlecode.libphonenumber)
     implementation(libs.spring.boot.security)
 
     implementation(projects.customerServiceProxy)
     implementation(projects.notificationServiceProxy)
+    implementation(projects.permissionServiceProxy)
+    implementation(projects.roleServiceProxy)
+    implementation(projects.shared)
     implementation(projects.storageServiceProxy)
     implementation(projects.userServiceProxy)
 

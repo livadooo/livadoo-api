@@ -1,13 +1,10 @@
 package com.livadoo.services.customer.services
 
-import com.livadoo.services.customer.data.Customer
-import com.livadoo.services.customer.data.CustomerCreate
+import com.livadoo.services.customer.data.CustomerDto
 
 interface CustomerService {
 
-    suspend fun createCustomer(customerCreate: CustomerCreate)
+    suspend fun createCustomer(userId: String, createdBy: String)
 
-    suspend fun updateCustomer(customerCreate: CustomerCreate)
-
-    suspend fun getCustomer(customerId: String): Customer
+    suspend fun getCustomer(customerId: String): CustomerDto
 }
