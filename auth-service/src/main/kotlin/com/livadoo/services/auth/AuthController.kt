@@ -1,4 +1,4 @@
-package com.livadoo.services.account
+package com.livadoo.services.auth
 
 import com.livadoo.utils.user.AuthUserDto
 import jakarta.validation.Valid

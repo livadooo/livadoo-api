@@ -1,10 +1,9 @@
-package com.livadoo.services.user.security
+package com.livadoo.services.auth.security
 
 import com.livadoo.utils.security.config.SecurityProperties
 import com.livadoo.utils.security.domain.AuthUser
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.jackson.io.JacksonSerializer
 import io.jsonwebtoken.security.Keys.hmacShaKeyFor
 import org.slf4j.Logger
@@ -31,11 +30,11 @@ class JwtSigner(
         val validity = Date(System.currentTimeMillis() + tokenValidityInMilliSeconds)
 
         return Jwts.builder()
-            .setSubject(authUser.username)
+            .subject(authUser.username)
             .claim(AUTHORITIES_KEY, authorities)
-            .signWith(accessTokenKey, SignatureAlgorithm.HS512)
-            .setExpiration(validity)
-            .serializeToJsonWith(JacksonSerializer())
+            .signWith(accessTokenKey, Jwts.SIG.HS512)
+            .expiration(validity)
+            .json(JacksonSerializer())
             .compact()
     }
 
@@ -46,17 +45,17 @@ class JwtSigner(
         val validity = Date(System.currentTimeMillis() + tokenValidityInMilliSeconds)
 
         return Jwts.builder()
-            .setSubject(authUser.username)
-            .signWith(refreshTokenKey, SignatureAlgorithm.HS512)
-            .setExpiration(validity)
-            .serializeToJsonWith(JacksonSerializer())
+            .subject(authUser.username)
+            .signWith(refreshTokenKey, Jwts.SIG.HS512)
+            .expiration(validity)
+            .json(JacksonSerializer())
             .compact()
     }
 
     fun getUserId(refreshToken: String): String? {
-        val jwtParser = Jwts.parserBuilder().setSigningKey(refreshTokenKey).build()
+        val jwtParser = Jwts.parser().verifyWith(refreshTokenKey).build()
         return try {
-            val claims = jwtParser.parseClaimsJws(refreshToken).body
+            val claims = jwtParser.parseSignedClaims(refreshToken).payload
             claims.subject
         } catch (e: JwtException) {
             logger.info("Received invalid refresh token.")
