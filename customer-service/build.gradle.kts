@@ -2,8 +2,6 @@ plugins {
     id("com.livadoo.services-conventions")
 }
 
-version = "0.0.1"
-
 dependencies {
     implementation(projects.utils.securityUtils)
     implementation(project(":customer-service-proxy"))

@@ -2,8 +2,6 @@ plugins {
     id("com.livadoo.services-conventions")
 }
 
-version = "0.0.1"
-
 dependencies {
     implementation(projects.utils.springUtils)
     implementation(project(":storage-service-proxy"))
