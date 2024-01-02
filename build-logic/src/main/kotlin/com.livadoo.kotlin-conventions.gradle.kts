@@ -25,6 +25,6 @@ tasks.withType<KotlinCompile> {
 configure<SpotlessExtension> {
 	ratchetFrom = "origin/main"
 	kotlin {
-		ktlint("1.1.0")
+		ktlint("0.48.2")
 	}
 }
