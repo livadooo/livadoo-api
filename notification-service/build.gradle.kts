@@ -3,9 +3,10 @@ plugins {
 }
 
 dependencies {
-	implementation(project(":notification-service-proxy"))
-	implementation(projects.utils.springUtils)
+	implementation(libs.spring.boot.mail)
+	implementation(libs.spring.boot.thymeleaf)
 
-	implementation("org.springframework.boot:spring-boot-starter-mail")
-	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+	implementation(projects.notificationServiceProxy)
+
+	implementation(projects.utils.springUtils)
 }

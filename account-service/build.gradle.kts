@@ -3,13 +3,15 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.utils.springUtils)
-    implementation(projects.utils.userUtils)
-    implementation(projects.utils.securityUtils)
+    implementation(libs.jjwt.api)
+    implementation(libs.jjwt.jackson)
+    implementation(libs.spring.boot.security)
+
     implementation(projects.notificationServiceProxy)
     implementation(projects.authServiceProxy)
     implementation(projects.userServiceProxy)
-    implementation(libs.spring.boot.security)
-    implementation(libs.jjwt.api)
-    implementation(libs.jjwt.jackson)
+
+    implementation(projects.utils.securityUtils)
+    implementation(projects.utils.springUtils)
+    implementation(projects.utils.userUtils)
 }

@@ -12,31 +12,29 @@ group = "com.livadoo.services"
 version = "0.0.1"
 
 dependencies {
-    implementation(projects.accountService)
-    implementation(projects.authService)
-    implementation(projects.notificationService)
-    implementation(projects.userService)
-    implementation(projects.customerService)
-    implementation(projects.storageService)
-    implementation(projects.inventoryService)
-    implementation(projects.roleService)
-    implementation(projects.otpService)
-    implementation(projects.permissionService)
-    implementation(projects.utils.securityUtils)
-
     implementation(platform(libs.mongock.bom))
-    implementation(libs.mongock.mongodb.reactive.driver)
-    implementation(libs.mongock.springboot)
 
-    implementation(platform(libs.mongock.bom))
+    implementation(libs.error.handling)
     implementation(libs.kotlinx.coroutines.reactor)
     implementation(libs.mongock.mongodb.reactive.driver)
     implementation(libs.mongock.springboot)
+    implementation(libs.springfox.boot)
     implementation(libs.spring.boot.data.mongodb.reactive)
     implementation(libs.spring.boot.security)
     implementation(libs.spring.boot.webflux)
-    implementation(libs.springfox.boot)
-    implementation(libs.error.handling)
+
+    implementation(projects.accountService)
+    implementation(projects.authService)
+    implementation(projects.customerService)
+    implementation(projects.inventoryService)
+    implementation(projects.notificationService)
+    implementation(projects.otpService)
+    implementation(projects.permissionService)
+    implementation(projects.roleService)
+    implementation(projects.storageService)
+    implementation(projects.userService)
+
+    implementation(projects.utils.securityUtils)
 }
 
 val supportedProfiles = setOf("dev", "prod")
