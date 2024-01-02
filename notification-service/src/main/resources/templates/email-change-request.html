@@ -160,7 +160,7 @@
                                         <tbody>
                                         <tr>
                                             <td width="100%" valign="top" align="center" class="links-color">
-                                                <p style="margin: 0; text-align: right">Vérifiez votre compte<br/>Livadoo</p>
+                                                <p style="margin: 0; text-align: right">Réinitialiser votre mot de passe</p>
                                             </td>
                                         </tr>
                                         </tbody>
@@ -225,8 +225,9 @@
                         <tr>
                             <td class="long-text links-color" width="100%" valign="top" align="left"
                                 style="font-weight: normal; color: #3f3f3f; font-size: 14px; font-family: Arial, Helvetica, sans-serif; text-align: left; line-height: normal;">
-                                <p style="margin: 1.5em 0px; margin-top: 0px;">Pour vérifier votre adresse email, utilisez le code OTP suivant:</p>
-                                <strong th:text="${verificationKey}" style="font-size: 18px"></strong>
+                                <p style="margin: 1.5em 0px; margin-top: 0px;">Pour réinitialiser votre mot de passe, utilisez le code OTP suivant:</p>
+                                <strong th:text="${resetKey}" style="font-size: 18px"></strong>
+                                <p style="margin: 1.5em 0px;" th:text="'Ce code expirera dans ' + ${expirationTime} + ' heures.'"></p>
                                 <p style="margin: 1.5em 0px;">
                                     Ne partagez pas ce code OTP avec qui que ce soit. Livadoo prend la sécurité de votre compte très au sérieux.
                                     Le service client de Livadoo ne vous demandera jamais de divulguer ou de vérifier votre mot de passe Livadoo,

@@ -25,8 +25,9 @@ mongock-bom = { module = "io.mongock:mongock-bom", version = "5.3.6" }
 mongock-springboot = { module = "io.mongock:mongock-springboot" }
 spring-boot-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "spring-boot" }
 mongock-mongodb-reactive-driver = { module = "io.mongock:mongodb-reactive-driver" }
+sendgrid = { module = "com.sendgrid:sendgrid-java", version = "4.9.3" }
+twilio = { module = "com.twilio.sdk:twilio", version = "9.14.1" }
 spotless-plugin = { module = "com.diffplug.spotless:com.diffplug.spotless.gradle.plugin", version.ref = "spotless" }
-sendgrid-java = { module = "com.sendgrid:sendgrid-java", version = "4.9.3" }
 spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version = "2.7.5" }
 spring-boot-data-mongodb-reactive = { module = "org.springframework.boot:spring-boot-starter-data-mongodb-reactive", version.ref = "spring-boot" }
 spring-boot-mail = { module = "org.springframework.boot:spring-boot-starter-mail", version.ref = "spring-boot" }

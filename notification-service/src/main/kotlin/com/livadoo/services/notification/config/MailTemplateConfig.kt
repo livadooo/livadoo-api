@@ -8,7 +8,6 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 import org.thymeleaf.templateresolver.ITemplateResolver
 import java.util.*
 
-
 @Configuration
 class MailTemplateConfig {
 
@@ -31,5 +30,4 @@ class MailTemplateConfig {
         templateResolver.isCacheable = false
         return templateResolver
     }
-
 }
