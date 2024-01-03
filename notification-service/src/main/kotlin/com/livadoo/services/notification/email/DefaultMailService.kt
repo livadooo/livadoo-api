@@ -33,7 +33,6 @@ class DefaultMailService(
         firstName: String,
         email: String,
         otp: String,
-        expirationTime: Int,
         locale: Locale,
     ) {
         val emailType = PASSWORD_RESET_REQUEST
@@ -42,7 +41,6 @@ class DefaultMailService(
             firstName = firstName,
             email = email,
             otp = otp,
-            expirationTime = expirationTime,
         )
         emailSender.send(recipient = email, subject = subject, body = body, emailType = emailType)
     }
@@ -61,7 +59,6 @@ class DefaultMailService(
         firstName: String,
         email: String,
         otp: String,
-        expirationTime: Int,
         locale: Locale,
     ) {
         val emailType = EMAIL_CHANGE_REQUEST
@@ -70,7 +67,6 @@ class DefaultMailService(
             firstName = firstName,
             email = email,
             otp = otp,
-            expirationTime = expirationTime,
         )
         emailSender.send(recipient = email, subject = subject, body = body, emailType = emailType)
     }

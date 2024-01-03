@@ -27,14 +27,12 @@ class DefaultNotificationService(
         firstName: String,
         email: String,
         otp: String,
-        expirationTime: Int,
         locale: Locale,
     ) {
         mailService.sendPasswordResetRequestEmail(
             firstName = firstName,
             email = email,
             otp = otp,
-            expirationTime = expirationTime,
             locale = locale,
         )
     }
@@ -47,14 +45,12 @@ class DefaultNotificationService(
         firstName: String,
         email: String,
         otp: String,
-        expirationTime: Int,
         locale: Locale,
     ) {
         mailService.sendEmailChangeRequestEmail(
             firstName = firstName,
             email = email,
             otp = otp,
-            expirationTime = expirationTime,
             locale = locale,
         )
     }

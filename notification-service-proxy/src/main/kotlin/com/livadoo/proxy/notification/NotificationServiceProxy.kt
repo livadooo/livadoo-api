@@ -18,7 +18,6 @@ interface NotificationServiceProxy {
         firstName: String,
         email: String,
         otp: String,
-        expirationTime: Int,
         language: ProxyLanguage,
     )
 
@@ -32,7 +31,6 @@ interface NotificationServiceProxy {
         firstName: String,
         email: String,
         otp: String,
-        expirationTime: Int,
         language: ProxyLanguage,
     )
 

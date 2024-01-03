@@ -7,6 +7,7 @@ dependencies {
     implementation(libs.jjwt.api)
     implementation(libs.jjwt.jackson)
 
+    implementation(projects.authoritySearchServiceProxy)
     implementation(projects.authServiceProxy)
     implementation(projects.notificationServiceProxy)
     implementation(projects.authoritySearchServiceProxy)
