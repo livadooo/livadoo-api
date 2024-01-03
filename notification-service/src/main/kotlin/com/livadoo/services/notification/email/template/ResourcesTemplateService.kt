@@ -23,9 +23,9 @@ class ResourcesTemplateService(
         }
     }
 
-    override fun getPasswordResetRequestContent(firstName: String, email: String, otp: String, expirationTime: Int): String {
+    override fun getPasswordResetRequestContent(firstName: String, email: String, otp: String): String {
         return with(Context()) {
-            setVariables(mapOf("otp" to otp, "expirationTime" to expirationTime))
+            setVariable("otp", otp)
             templateEngine.process("password-reset-request", this)
         }
     }
@@ -38,9 +38,9 @@ class ResourcesTemplateService(
         }
     }
 
-    override fun getEmailChangeRequestContent(firstName: String, email: String, otp: String, expirationTime: Int): String {
+    override fun getEmailChangeRequestContent(firstName: String, email: String, otp: String): String {
         return with(Context()) {
-            setVariables(mapOf("otp" to otp, "expirationTime" to expirationTime))
+            setVariable("otp", otp)
             templateEngine.process("email-change-request", this)
         }
     }

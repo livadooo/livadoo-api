@@ -16,6 +16,7 @@ import com.livadoo.services.user.exceptions.DuplicateEmailException
 import com.livadoo.services.user.exceptions.DuplicatePhoneNumberException
 import com.livadoo.services.user.exceptions.InvalidStaffRolesException
 import com.livadoo.services.user.exceptions.SimilarPasswordException
+import com.livadoo.services.user.exceptions.UserEmailNotFoundException
 import com.livadoo.services.user.exceptions.UserNotFoundException
 import com.livadoo.services.user.exceptions.WrongPasswordException
 import com.livadoo.shared.extension.containsExceptionKey
@@ -145,6 +146,14 @@ class DefaultUserService(
     override suspend fun getUserById(userId: String): UserDto {
         val userEntity = getUser(userId)
         val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userId)
+        return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
+    }
+
+    override suspend fun getUserByEmail(email: String): UserDto {
+        val userEntity = userRepository.findByEmailIgnoreCase(email)
+            ?: throw UserEmailNotFoundException(email)
+
+        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
         return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
     }
 

@@ -75,7 +75,11 @@ class DefaultAuthService(
                 )
                 saveUser(userEntity).toDto(roles = emptyList(), permissions = emptyList())
             }
-            return authenticateInternally(userId = userDto.userId, roles = emptyList(), permissions = emptyList())
+            return authenticateInternally(
+                userId = userDto.userId,
+                roles = userDto.roles,
+                permissions = userDto.permissions,
+            )
         } else {
             throw InvalidOtpException(authVerify.otp)
         }

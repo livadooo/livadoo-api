@@ -7,8 +7,9 @@ dependencies {
     implementation(libs.jjwt.jackson)
     implementation(libs.spring.boot.security)
 
-    implementation(projects.notificationServiceProxy)
     implementation(projects.authServiceProxy)
+    implementation(projects.notificationServiceProxy)
+    implementation(projects.otpServiceProxy)
     implementation(projects.userServiceProxy)
 
     implementation(projects.utils.securityUtils)

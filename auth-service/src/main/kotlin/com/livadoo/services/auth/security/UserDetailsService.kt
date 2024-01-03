@@ -1,5 +1,6 @@
 package com.livadoo.services.auth.security
 
+import com.livadoo.proxy.authority.search.AuthoritySearchServiceProxy
 import com.livadoo.services.auth.AuthRepository
 import com.livadoo.utils.exception.UnauthorizedException
 import com.livadoo.utils.security.domain.AuthUser
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono
 @Component("userDetailsService")
 class UserDetailsService(
     private val authRepository: AuthRepository,
+    private val authoritySearchServiceProxy: AuthoritySearchServiceProxy,
 ) : ReactiveUserDetailsService {
     override fun findByUsername(username: String): Mono<UserDetails> {
         return mono {
@@ -31,19 +33,17 @@ class UserDetailsService(
         }
     }
 
-    private fun createSpringSecurityUser(userEntity: UserEntity): AuthUser {
+    private suspend fun createSpringSecurityUser(userEntity: UserEntity): AuthUser {
         if (!userEntity.verified) {
             throw UnauthorizedException("Account not verified")
         }
-
-        val permissions = userEntity.permissionIds
-            .map { SimpleGrantedAuthority(it) }
+        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
 
         return AuthUser(
             username = userEntity.userId,
             userEntity.password!!,
-            permissions = permissions,
-            roles = userEntity.roleIds,
+            permissions = authorities.permissions.map { SimpleGrantedAuthority(it) },
+            roles = authorities.roles,
         )
     }
 }

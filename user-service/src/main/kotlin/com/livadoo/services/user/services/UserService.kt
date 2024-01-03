@@ -18,6 +18,8 @@ interface UserService {
 
     suspend fun getUserByPhoneNumber(phoneNumber: String): UserDto
 
+    suspend fun getUserByEmail(email: String): UserDto
+
     suspend fun blockUser(userId: String)
 
     suspend fun deleteUser(userId: String)

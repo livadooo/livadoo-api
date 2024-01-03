@@ -31,12 +31,11 @@ class DefaultNotificationServiceProxy(
         )
     }
 
-    override fun notifyPasswordResetRequest(firstName: String, email: String, otp: String, expirationTime: Int, language: ProxyLanguage) {
+    override fun notifyPasswordResetRequest(firstName: String, email: String, otp: String, language: ProxyLanguage) {
         notificationService.notifyPasswordResetRequest(
             firstName = firstName,
             email = email,
             otp = otp,
-            expirationTime = expirationTime,
             locale = Locale.forLanguageTag(language.name),
         )
     }
@@ -49,12 +48,11 @@ class DefaultNotificationServiceProxy(
         )
     }
 
-    override fun notifyEmailChangeRequest(firstName: String, email: String, otp: String, expirationTime: Int, language: ProxyLanguage) {
+    override fun notifyEmailChangeRequest(firstName: String, email: String, otp: String, language: ProxyLanguage) {
         notificationService.notifyEmailChangeRequest(
             firstName = firstName,
             email = email,
             otp = otp,
-            expirationTime = expirationTime,
             locale = Locale.forLanguageTag(language.name),
         )
     }
