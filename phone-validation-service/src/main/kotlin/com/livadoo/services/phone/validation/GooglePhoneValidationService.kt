@@ -1,15 +1,14 @@
-package com.livadoo.services.user.phone
+package com.livadoo.services.phone.validation
 
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat
-import com.livadoo.services.user.exceptions.InvalidPhoneNumberException
 import org.springframework.stereotype.Service
 
 @Service
-class GooglePhoneNumberValidationService(
+class GooglePhoneValidationService(
     private val phoneNumberUtil: PhoneNumberUtil,
-) : PhoneNumberValidationService {
+) : PhoneValidationService {
     override fun validate(phoneNumber: String, regionCode: String): String {
         return try {
             val parsedPhoneNumber = phoneNumberUtil.parse(phoneNumber, regionCode)

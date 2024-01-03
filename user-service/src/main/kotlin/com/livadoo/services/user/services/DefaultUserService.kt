@@ -1,9 +1,11 @@
 package com.livadoo.services.user.services
 
+import com.livadoo.proxy.authority.search.AuthoritySearchServiceProxy
 import com.livadoo.proxy.customer.CustomerServiceProxy
 import com.livadoo.proxy.notification.NotificationServiceProxy
 import com.livadoo.proxy.notification.ProxyLanguage
 import com.livadoo.proxy.permission.PermissionServiceProxy
+import com.livadoo.proxy.phone.validation.PhoneValidationServiceProxy
 import com.livadoo.proxy.role.RoleServiceProxy
 import com.livadoo.proxy.storage.StorageServiceProxy
 import com.livadoo.services.user.data.CustomerUserCreate
@@ -16,7 +18,6 @@ import com.livadoo.services.user.exceptions.InvalidStaffRolesException
 import com.livadoo.services.user.exceptions.SimilarPasswordException
 import com.livadoo.services.user.exceptions.UserNotFoundException
 import com.livadoo.services.user.exceptions.WrongPasswordException
-import com.livadoo.services.user.phone.PhoneNumberValidationService
 import com.livadoo.shared.extension.containsExceptionKey
 import com.livadoo.utils.exception.InternalErrorException
 import com.livadoo.utils.security.config.AppSecurityContext
@@ -44,11 +45,12 @@ class DefaultUserService(
     private val securityContext: AppSecurityContext,
     private val permissionServiceProxy: PermissionServiceProxy,
     private val roleServiceProxy: RoleServiceProxy,
-    private val phoneNumberValidationService: PhoneNumberValidationService,
+    private val phoneValidationServiceProxy: PhoneValidationServiceProxy,
     private val clock: Clock,
+    private val authoritySearchServiceProxy: AuthoritySearchServiceProxy,
 ) : UserService {
     override suspend fun createCustomerUser(customerUserCreate: CustomerUserCreate): UserDto {
-        val phoneNumber = phoneNumberValidationService.validate(
+        val phoneNumber = phoneValidationServiceProxy.validate(
             phoneNumber = customerUserCreate.phoneNumber,
             regionCode = customerUserCreate.regionCode,
         )
@@ -72,11 +74,11 @@ class DefaultUserService(
             userId = userEntity.userId,
             createdBy = securityContext.getCurrentUserIdOrDefault(),
         )
-        return userEntity.toDto()
+        return userEntity.toDto(permissions = emptyList(), roles = emptyList())
     }
 
     override suspend fun createStaffUser(staffUserCreate: StaffUserCreate): UserDto {
-        val phoneNumber = phoneNumberValidationService.validate(
+        val phoneNumber = phoneValidationServiceProxy.validate(
             phoneNumber = staffUserCreate.phoneNumber,
             regionCode = staffUserCreate.regionCode,
         )
@@ -86,7 +88,7 @@ class DefaultUserService(
         }
         val permissionIds = permissionServiceProxy.getBasePermissionsByRoles(roleIds)
         val password = randomPassword
-        val userEntity = UserEntity(
+        var userEntity = UserEntity(
             firstName = staffUserCreate.firstName,
             lastName = staffUserCreate.lastName,
             language = Language.FR,
@@ -104,11 +106,13 @@ class DefaultUserService(
             password = password,
             language = ProxyLanguage.valueOf(userEntity.language.name),
         )
-        return saveUser(userEntity).toDto()
+        userEntity = saveUser(userEntity)
+        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
+        return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
     }
 
     override suspend fun updateUser(userUpdate: UserUpdate): UserDto {
-        val userEntity = getUser(userUpdate.userId)
+        var userEntity = getUser(userUpdate.userId)
 
         userEntity.apply {
             firstName = userUpdate.firstName
@@ -119,8 +123,9 @@ class DefaultUserService(
             updatedAt = clock.instant()
             updatedBy = securityContext.getCurrentUserId()
         }
-
-        return saveUser(userEntity).toDto()
+        userEntity = saveUser(userEntity)
+        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
+        return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
     }
 
     override suspend fun updateUserPortrait(filePart: FilePart, userId: String): String {
@@ -138,7 +143,17 @@ class DefaultUserService(
     }
 
     override suspend fun getUserById(userId: String): UserDto {
-        return getUser(userId).toDto()
+        val userEntity = getUser(userId)
+        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userId)
+        return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
+    }
+
+    override suspend fun getUserByPhoneNumber(phoneNumber: String): UserDto {
+        val userEntity = userRepository.findByPhoneNumber(phoneNumber)
+            ?: throw UserNotFoundException(phoneNumber)
+
+        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
+        return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
     }
 
     override suspend fun blockUser(userId: String) {

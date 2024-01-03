@@ -8,8 +8,8 @@ import java.time.Instant
 
 @Document(collection = "users")
 data class UserEntity(
-    var firstName: String,
-    var lastName: String,
+    var firstName: String?,
+    var lastName: String?,
     var language: Language,
     @Indexed(unique = true)
     var userId: String,
@@ -38,12 +38,12 @@ data class UserEntity(
     var version: Int = 0,
 )
 
-fun UserEntity.toDto() = UserDto(
+fun UserEntity.toDto(roles: List<String>, permissions: List<String>) = UserDto(
     firstName = firstName,
     lastName = lastName,
     phoneNumber = phoneNumber,
-    roles = roleIds,
-    permissions = permissionIds,
+    roles = roles,
+    permissions = permissions,
     email = email,
     photoUrl = photoUrl,
     address = address,

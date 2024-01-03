@@ -9,5 +9,5 @@ data class CustomerAuthVerify(
     @NotBlank
     val regionCode: String,
     @Size(min = 6, max = 6)
-    val verificationCode: String,
+    val otp: String,
 )

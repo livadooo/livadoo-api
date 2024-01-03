@@ -8,6 +8,8 @@ pluginManagement {
 
 include(
     "app",
+    "authority-search-service",
+    "authority-search-service-proxy",
     "account-service",
     "auth-service",
     "auth-service-proxy",
@@ -19,9 +21,13 @@ include(
     "storage-service",
     "customer-service",
     "otp-service",
+    "phone-validation-service",
+    "phone-validation-service-proxy",
     "otp-service-proxy",
     "notification-service-proxy",
     "storage-service-proxy",
+    "user-search-service",
+    "user-search-service-proxy",
     "customer-service-proxy",
     "inventory-service-proxy",
     "utils:exception-utils",

@@ -5,4 +5,6 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 
 interface UserRepository : CoroutineCrudRepository<UserEntity, String> {
     suspend fun findByUserId(userId: String): UserEntity?
+
+    suspend fun findByPhoneNumber(phoneNumber: String): UserEntity?
 }
