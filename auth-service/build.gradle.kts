@@ -9,6 +9,11 @@ dependencies {
 
     implementation(projects.authServiceProxy)
     implementation(projects.notificationServiceProxy)
+    implementation(projects.authoritySearchServiceProxy)
+    implementation(projects.otpServiceProxy)
+    implementation(projects.shared)
+    implementation(projects.permissionServiceProxy)
+    implementation(projects.phoneValidationServiceProxy)
     implementation(projects.userServiceProxy)
 
     implementation(projects.utils.securityUtils)

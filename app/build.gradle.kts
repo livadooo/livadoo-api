@@ -24,14 +24,17 @@ dependencies {
     implementation(libs.spring.boot.webflux)
 
     implementation(projects.accountService)
+    implementation(projects.authoritySearchService)
     implementation(projects.authService)
     implementation(projects.customerService)
     implementation(projects.inventoryService)
     implementation(projects.notificationService)
     implementation(projects.otpService)
     implementation(projects.permissionService)
+    implementation(projects.phoneValidationService)
     implementation(projects.roleService)
     implementation(projects.storageService)
+    implementation(projects.userSearchService)
     implementation(projects.userService)
 
     implementation(projects.utils.securityUtils)

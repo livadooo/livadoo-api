@@ -1,4 +1,4 @@
-package com.livadoo.services.user
+package com.livadoo.services.phone.validation
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import org.springframework.context.annotation.Bean

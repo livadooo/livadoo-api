@@ -4,8 +4,8 @@ import jakarta.validation.constraints.Email
 import java.time.Instant
 
 data class UserDto(
-    var firstName: String,
-    var lastName: String,
+    var firstName: String?,
+    var lastName: String?,
     var phoneNumber: String?,
     var roles: List<String>,
     var permissions: List<String>,

@@ -10,23 +10,23 @@ class DefaultOtpServiceProxy(
 ) : OtpServiceProxy {
     override suspend fun createOtp(
         subject: String,
-        proxyOtpType: ProxyOtpType,
+        otpType: ProxyOtpType,
     ): String {
         return otpService.createOtp(
             subject = subject,
-            otpType = proxyOtpType.toOtpType(),
+            otpType = otpType.toOtpType(),
         )
     }
 
     override suspend fun isOtpValid(
         subject: String,
         password: String,
-        proxyOtpType: ProxyOtpType,
+        otpType: ProxyOtpType,
     ): Boolean {
         return otpService.isOtpValid(
             subject = subject,
             password = password,
-            otpType = proxyOtpType.toOtpType(),
+            otpType = otpType.toOtpType(),
         )
     }
 
