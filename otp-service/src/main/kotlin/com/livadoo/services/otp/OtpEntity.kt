@@ -7,7 +7,7 @@ import java.time.Instant
 
 @Document(collection = "one-time-passwords")
 data class OtpEntity(
-    var password: String,
+    var otp: String,
     val subject: String,
     val type: OtpType,
     var expiresAt: Instant,

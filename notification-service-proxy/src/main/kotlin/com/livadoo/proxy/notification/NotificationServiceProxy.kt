@@ -17,7 +17,7 @@ interface NotificationServiceProxy {
     fun notifyPasswordResetRequest(
         firstName: String,
         email: String,
-        otp: String,
+        resetLink: String,
         language: ProxyLanguage,
     )
 

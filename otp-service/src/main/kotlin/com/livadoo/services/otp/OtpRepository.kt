@@ -1,16 +1,10 @@
 package com.livadoo.services.otp
 
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
-import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 interface OtpRepository : CoroutineCrudRepository<OtpEntity, String> {
-    suspend fun findBySubjectAndPasswordAndTypeAndExpiresAtGreaterThanEqual(
-        subject: String,
-        password: String,
-        type: OtpType,
-        expiresAt: Instant,
-    ): OtpEntity?
+    suspend fun findByOtpAndTypeAndExpiresAtGreaterThanEqual(otp: String, type: OtpType, expiresAt: Instant): OtpEntity?
 
     suspend fun findBySubjectAndTypeAndExpiresAtGreaterThan(
         subject: String,
@@ -18,10 +12,5 @@ interface OtpRepository : CoroutineCrudRepository<OtpEntity, String> {
         expiresAt: Instant,
     ): OtpEntity?
 
-    @Transactional
-    suspend fun deleteBySubjectAndPasswordAndType(
-        subject: String,
-        password: String,
-        type: OtpType,
-    )
+    suspend fun existsByOtpAndTypeAndExpiresAtGreaterThanEqual(otp: String, type: OtpType, expiresAt: Instant): Boolean
 }

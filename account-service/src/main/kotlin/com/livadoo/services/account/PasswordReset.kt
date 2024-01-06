@@ -1,3 +1,3 @@
 package com.livadoo.services.account
 
-data class PasswordReset(val resetKey: String, val password: String)
+data class PasswordReset(val otp: String, val password: String)
