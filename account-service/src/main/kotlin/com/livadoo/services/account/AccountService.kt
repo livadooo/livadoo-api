@@ -8,4 +8,6 @@ interface AccountService {
     suspend fun requestPasswordReset(resetRequest: PasswordResetRequest)
 
     suspend fun resetPassword(passwordReset: PasswordReset)
+
+    suspend fun checkStaffOtpValidity(otp: String): Boolean
 }

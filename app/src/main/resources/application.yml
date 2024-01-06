@@ -24,8 +24,9 @@ livadoo:
   otp:
     customer-auth:
       validity-time-in-minutes: 15
-    password-reset:
+    staff-password-reset:
       validity-time-in-hours: 24
+      adminx-url:
 
   user:
     password-reset:

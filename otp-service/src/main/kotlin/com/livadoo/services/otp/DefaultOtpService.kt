@@ -3,8 +3,10 @@ package com.livadoo.services.otp
 import com.livadoo.services.otp.OtpType.CUSTOMER_AUTH
 import com.livadoo.services.otp.OtpType.STAFF_PASSWORD_RESET
 import org.springframework.stereotype.Service
+import java.security.SecureRandom
 import java.time.Clock
 import java.time.temporal.ChronoUnit
+import java.util.*
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -24,44 +26,63 @@ class DefaultOtpService(
         if (otpEntity != null) {
             otpEntity.apply {
                 expiresAt = clock.instant().plus(expirationTime.toLong(), ChronoUnit.MINUTES)
-                password = randomPassword
+                otp = buildOtp(otpType)
             }
         } else {
             otpEntity = OtpEntity(
-                password = randomPassword,
+                otp = buildOtp(otpType),
                 subject = subject,
                 type = otpType,
                 expiresAt = clock.instant().plus(expirationTime.toLong(), ChronoUnit.MINUTES),
             )
         }
-        return otpRepository.save(otpEntity).password
+        otpEntity = otpRepository.save(otpEntity)
+
+        return when (otpType) {
+            CUSTOMER_AUTH -> otpEntity.otp
+            STAFF_PASSWORD_RESET -> buildResetLink(otpEntity.otp)
+        }
     }
 
-    override suspend fun isOtpValid(subject: String, password: String, otpType: OtpType): Boolean {
-        val otpEntity = otpRepository.findBySubjectAndPasswordAndTypeAndExpiresAtGreaterThanEqual(
-            subject = subject,
-            password = password,
+    override suspend fun validateOtp(otp: String, otpType: OtpType): String? {
+        return otpRepository.findByOtpAndTypeAndExpiresAtGreaterThanEqual(
+            otp = otp,
+            type = otpType,
+            expiresAt = clock.instant(),
+        )?.let {
+            otpRepository.delete(it)
+            it.subject
+        }
+    }
+
+    override suspend fun isOtpValid(otp: String, otpType: OtpType): Boolean {
+        return otpRepository.existsByOtpAndTypeAndExpiresAtGreaterThanEqual(
+            otp = otp,
             type = otpType,
             expiresAt = clock.instant(),
         )
-        if (otpEntity != null) {
-            otpRepository.deleteBySubjectAndPasswordAndType(
-                subject = subject,
-                password = password,
-                type = otpType,
-            )
-            return true
-        }
-        return false
     }
 
     private fun getExpirationTime(otpType: OtpType): Int {
         return when (otpType) {
             CUSTOMER_AUTH -> otpProperties.customerAuth.validityTimeInMinutes
-            STAFF_PASSWORD_RESET -> otpProperties.passwordReset.validityTimeInHours
+            STAFF_PASSWORD_RESET -> otpProperties.staffPasswordReset.validityTimeInHours
         }
     }
 
-    private val randomPassword: String
-        get() = Random.nextInt(IntRange(100000, 999999)).toString()
+    private fun buildOtp(otpType: OtpType): String {
+        return when (otpType) {
+            CUSTOMER_AUTH -> Random.nextInt(IntRange(100000, 999999)).toString()
+            STAFF_PASSWORD_RESET -> {
+                val secureRandom = SecureRandom()
+                val randomBytes = ByteArray(64)
+                secureRandom.nextBytes(randomBytes)
+                Base64.getUrlEncoder().encodeToString(randomBytes)
+            }
+        }
+    }
+
+    private fun buildResetLink(otp: String): String {
+        return "${otpProperties.staffPasswordReset.adminxUrl}/reset-password?token=$otp"
+    }
 }

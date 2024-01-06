@@ -48,41 +48,31 @@ class DefaultAuthService(
     }
 
     override suspend fun verifyCustomerAuth(authVerify: CustomerAuthVerify): AuthUserDto {
-        val phoneNumber = phoneValidationServiceProxy.validate(
-            phoneNumber = authVerify.phoneNumber,
-            regionCode = authVerify.regionCode,
-        )
-        val isOtpValid = otpServiceProxy.isOtpValid(
-            subject = phoneNumber,
-            password = authVerify.otp,
-            otpType = CUSTOMER_AUTH,
-        )
-        if (isOtpValid) {
-            val userDto = try {
-                userServiceProxy.getUserByPhoneNumber(phoneNumber)
-            } catch (exception: Exception) {
-                val userEntity = UserEntity(
-                    language = Language.FR,
-                    userId = buildUserId,
-                    activated = false,
-                    phoneNumber = phoneNumber,
-                    roleIds = emptyList(),
-                    permissionIds = emptyList(),
-                    firstName = null,
-                    lastName = null,
-                    email = null,
-                    password = null,
+        return otpServiceProxy.validateOtp(otp = authVerify.otp, otpType = CUSTOMER_AUTH)
+            ?.let { phoneNumber ->
+                val userDto = try {
+                    userServiceProxy.getUserByPhoneNumber(phoneNumber)
+                } catch (exception: Exception) {
+                    val userEntity = UserEntity(
+                        language = Language.FR,
+                        userId = buildUserId,
+                        activated = false,
+                        phoneNumber = phoneNumber,
+                        roleIds = emptyList(),
+                        permissionIds = emptyList(),
+                        firstName = null,
+                        lastName = null,
+                        email = null,
+                        password = null,
+                    )
+                    saveUser(userEntity).toDto(roles = emptyList(), permissions = emptyList())
+                }
+                return authenticateInternally(
+                    userId = userDto.userId,
+                    roles = userDto.roles,
+                    permissions = userDto.permissions,
                 )
-                saveUser(userEntity).toDto(roles = emptyList(), permissions = emptyList())
-            }
-            return authenticateInternally(
-                userId = userDto.userId,
-                roles = userDto.roles,
-                permissions = userDto.permissions,
-            )
-        } else {
-            throw InvalidOtpException(authVerify.otp)
-        }
+            } ?: throw InvalidOtpException(authVerify.otp)
     }
 
     override suspend fun authenticateStaff(credentials: StaffAuthCredentials): AuthUserDto {
