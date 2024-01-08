@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service
 class DefaultAuthoritySearchServiceProxy(
     private val authoritySearchService: AuthoritySearchService,
 ) : AuthoritySearchServiceProxy {
-    override suspend fun getAuthoritiesByUserId(userId: String): ProxyAuthorityDto {
-        return authoritySearchService.getAuthoritiesByUserId(userId).toProxy()
+    override suspend fun getUserAuthorities(userId: String): ProxyAuthorityDto {
+        return authoritySearchService.getUserAuthorities(userId).toProxy()
     }
 
     private fun AuthorityDto.toProxy(): ProxyAuthorityDto {

@@ -25,6 +25,10 @@ tasks.withType<KotlinCompile> {
 configure<SpotlessExtension> {
 	ratchetFrom = "origin/main"
 	kotlin {
-		ktlint("0.48.2")
+		ktlint("0.48.2").editorConfigOverride(
+			mapOf(
+				"disabled_rules" to "filename,"
+			)
+		)
 	}
 }

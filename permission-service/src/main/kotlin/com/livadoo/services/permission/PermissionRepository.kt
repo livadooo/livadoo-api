@@ -4,5 +4,5 @@ import kotlinx.coroutines.flow.Flow
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 
 interface PermissionRepository : CoroutineCrudRepository<PermissionEntity, String> {
-    fun findByBaseIsTrueAndRoleIdIn(roleIds: List<String>): Flow<PermissionEntity>
+    fun findByRoleIdIn(roleIds: List<String>): Flow<PermissionEntity>
 }

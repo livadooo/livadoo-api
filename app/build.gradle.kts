@@ -38,6 +38,7 @@ dependencies {
     implementation(projects.userService)
 
     implementation(projects.utils.securityUtils)
+    implementation(projects.utils.userUtils)
 }
 
 val supportedProfiles = setOf("dev", "prod")

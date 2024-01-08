@@ -17,33 +17,33 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class MongockConfig(
-	private val mongodbProperties: MongodbProperties
+    private val mongodbProperties: MongodbProperties,
 ) {
 
-	@Bean
-	fun getBuilder(
-		reactiveMongoClient: MongoClient,
-		context: ApplicationContext
-	): MongockInitializingBeanRunner {
-		return MongockSpringboot.builder()
-			.setDriver(MongoReactiveDriver.withDefaultLock(reactiveMongoClient, mongodbProperties.database))
-			.addMigrationScanPackage("com.livadoo.services.dbmigrations")
-			.setSpringContext(context)
-			.setTransactionEnabled(true)
-			.buildInitializingBeanRunner()
-	}
+    @Bean
+    fun getBuilder(
+        reactiveMongoClient: MongoClient,
+        context: ApplicationContext,
+    ): MongockInitializingBeanRunner {
+        return MongockSpringboot.builder()
+            .setDriver(MongoReactiveDriver.withDefaultLock(reactiveMongoClient, mongodbProperties.database))
+            .addMigrationScanPackage("com.livadoo.services.db.migration")
+            .setSpringContext(context)
+            .setTransactionEnabled(true)
+            .buildInitializingBeanRunner()
+    }
 
-	@Bean
-	fun mongoClient(): MongoClient {
-		val codecRegistry: CodecRegistry = fromRegistries(
-			MongoClientSettings.getDefaultCodecRegistry(),
-			fromProviders(PojoCodecProvider.builder().automatic(true).build())
-		)
-		return MongoClients.create(
-			MongoClientSettings.builder()
-				.applyConnectionString(ConnectionString(mongodbProperties.uri))
-				.codecRegistry(codecRegistry)
-				.build()
-		)
-	}
+    @Bean
+    fun mongoClient(): MongoClient {
+        val codecRegistry: CodecRegistry = fromRegistries(
+            MongoClientSettings.getDefaultCodecRegistry(),
+            fromProviders(PojoCodecProvider.builder().automatic(true).build()),
+        )
+        return MongoClients.create(
+            MongoClientSettings.builder()
+                .applyConnectionString(ConnectionString(mongodbProperties.uri))
+                .codecRegistry(codecRegistry)
+                .build(),
+        )
+    }
 }

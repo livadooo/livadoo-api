@@ -67,6 +67,8 @@ class DefaultUserService(
             roleIds = emptyList(),
             permissionIds = emptyList(),
             password = null,
+            createdAt = clock.instant(),
+            createdBy = securityContext.getCurrentUserId(),
         )
 
         userEntity = saveUser(userEntity)
@@ -100,6 +102,8 @@ class DefaultUserService(
             roleIds = roleIds,
             permissionIds = permissionIds,
             password = passwordEncoder.encode(password),
+            createdAt = clock.instant(),
+            createdBy = securityContext.getCurrentUserId(),
         )
         notificationService.notifyStaffAccountCreated(
             firstName = staffUserCreate.firstName,
@@ -108,7 +112,7 @@ class DefaultUserService(
             language = ProxyLanguage.valueOf(userEntity.language.name),
         )
         userEntity = saveUser(userEntity)
-        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
+        val authorities = authoritySearchServiceProxy.getUserAuthorities(userEntity.userId)
         return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
     }
 
@@ -125,7 +129,7 @@ class DefaultUserService(
             updatedBy = securityContext.getCurrentUserId()
         }
         userEntity = saveUser(userEntity)
-        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
+        val authorities = authoritySearchServiceProxy.getUserAuthorities(userEntity.userId)
         return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
     }
 
@@ -145,7 +149,7 @@ class DefaultUserService(
 
     override suspend fun getUserById(userId: String): UserDto {
         val userEntity = getUser(userId)
-        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userId)
+        val authorities = authoritySearchServiceProxy.getUserAuthorities(userId)
         return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
     }
 
@@ -153,7 +157,7 @@ class DefaultUserService(
         val userEntity = userRepository.findByEmailIgnoreCase(email)
             ?: throw UserEmailNotFoundException(email)
 
-        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
+        val authorities = authoritySearchServiceProxy.getUserAuthorities(userEntity.userId)
         return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
     }
 
@@ -161,7 +165,7 @@ class DefaultUserService(
         val userEntity = userRepository.findByPhoneNumber(phoneNumber)
             ?: throw UserNotFoundException(phoneNumber)
 
-        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
+        val authorities = authoritySearchServiceProxy.getUserAuthorities(userEntity.userId)
         return userEntity.toDto(roles = authorities.roles, permissions = authorities.permissions)
     }
 

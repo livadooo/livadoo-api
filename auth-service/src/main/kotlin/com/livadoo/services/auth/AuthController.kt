@@ -14,14 +14,32 @@ class AuthController(
 ) {
     @PostMapping("/customers/request")
     suspend fun requestCustomerAuth(
-        @Valid @RequestBody authRequest: CustomerAuthRequest,
+        @Valid @RequestBody
+        authRequest: CustomerAuthRequest,
     ) {
         authService.requestCustomerAuth(authRequest)
     }
 
+    @PostMapping("/customers/verify")
+    suspend fun verifyCustomerAuth(
+        @Valid @RequestBody
+        authVerify: CustomerAuthVerify,
+    ): AuthUserDto {
+        return authService.verifyCustomerAuth(authVerify)
+    }
+
+    @PostMapping("/staff")
+    suspend fun authenticateStaff(
+        @Valid @RequestBody
+        staffAuthCredentials: StaffAuthCredentials,
+    ): AuthUserDto {
+        return authService.authenticateStaff(staffAuthCredentials)
+    }
+
     @PostMapping("/token/refresh")
     suspend fun refreshToken(
-        @Valid @RequestBody refreshToken: RefreshToken,
+        @Valid @RequestBody
+        refreshToken: RefreshToken,
     ): AuthUserDto {
         return authService.refreshToken(refreshToken)
     }

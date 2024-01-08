@@ -49,13 +49,13 @@ class SecurityConfig(
                     ),
                 ),
             )
-            .csrf(Customizer.withDefaults())
+            .csrf { csrf -> csrf.disable() }
             .addFilterAt(JwtFilter(jwtValidator), SecurityWebFiltersOrder.HTTP_BASIC)
             .exceptionHandling(Customizer.withDefaults())
             .requestCache(Customizer.withDefaults())
             .authorizeExchange { authorize ->
                 authorize
-                    .pathMatchers("/v1/users/verify").permitAll()
+                    .pathMatchers("/v1/auth/**").permitAll()
                     .pathMatchers("/v1/users/customer").permitAll()
                     .pathMatchers("/v1/users/block/*").permitAll()
                     .pathMatchers("/v1/users/login").permitAll()

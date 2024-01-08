@@ -28,8 +28,8 @@ data class UserEntity(
     var verified: Boolean = false,
     var blocked: Boolean = false,
     var deleted: Boolean = false,
-    var createdBy: String? = null,
-    var createdAt: Instant? = null,
+    var createdBy: String,
+    var createdAt: Instant,
     var updatedBy: String? = null,
     var updatedAt: Instant? = null,
     @Id

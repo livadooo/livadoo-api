@@ -1,7 +1,7 @@
 livadoo:
   jwt.security:
-    secret: UyK+f$pD+1X@<boXLfJwm_qXx2=z{]o&9S<w=|z^f;sD%73qBL&RYw;v2Zm`-%%
-    refresh-secret: <s1_>VS9C4/XtpVmxItC6D!{lA_uWHqk+IT=b0*iqCfiynY_06{>`<KIb%=p_UY
+    secret: UyK+f$pD+1X@<boXLfJwm_qXx2=z{]o&9S<JB6=6i>;W~q*4<O:1-;f<:wL4Ow=|z^f;sD%73qBL&RYw;v2Zm`-%%
+    refresh-secret: <s1_>VS9CJB6=6i>;W~q*4<O:1-;f<:wL4O4/XtpVmxItC6D!{lA_uWHqk+IT=b0*iqCfiynY_06{>`<KIb%=p_UY
     token-validity-in-seconds: 2592000
     refresh-token-validity-in-seconds: 3888000
     staff-token-validity-in-seconds: 5400

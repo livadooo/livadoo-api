@@ -1,5 +1,5 @@
 package com.livadoo.proxy.authority.search
 
 interface AuthoritySearchServiceProxy {
-    suspend fun getAuthoritiesByUserId(userId: String): ProxyAuthorityDto
+    suspend fun getUserAuthorities(userId: String): ProxyAuthorityDto
 }

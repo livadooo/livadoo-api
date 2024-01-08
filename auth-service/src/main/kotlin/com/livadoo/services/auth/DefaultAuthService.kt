@@ -12,6 +12,7 @@ import com.livadoo.shared.extension.containsExceptionKey
 import com.livadoo.utils.exception.InternalErrorException
 import com.livadoo.utils.exception.UnauthorizedException
 import com.livadoo.utils.security.domain.AuthUser
+import com.livadoo.utils.security.domain.SYSTEM_ACCOUNT
 import com.livadoo.utils.user.AuthUserDto
 import com.livadoo.utils.user.Language
 import com.livadoo.utils.user.UserEntity
@@ -25,6 +26,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Service
+import java.time.Clock
 
 @Service
 class DefaultAuthService(
@@ -36,6 +38,7 @@ class DefaultAuthService(
     private val otpServiceProxy: OtpServiceProxy,
     private val notificationServiceProxy: NotificationServiceProxy,
     private val authoritySearchServiceProxy: AuthoritySearchServiceProxy,
+    private val clock: Clock,
 ) : AuthService {
     override suspend fun requestCustomerAuth(authRequest: CustomerAuthRequest) {
         val phoneNumber = phoneValidationServiceProxy.validate(
@@ -64,6 +67,8 @@ class DefaultAuthService(
                         lastName = null,
                         email = null,
                         password = null,
+                        createdAt = clock.instant(),
+                        createdBy = SYSTEM_ACCOUNT,
                     )
                     saveUser(userEntity).toDto(roles = emptyList(), permissions = emptyList())
                 }
@@ -90,7 +95,7 @@ class DefaultAuthService(
     override suspend fun refreshToken(refreshToken: RefreshToken): AuthUserDto {
         val userId = jwtSigner.getUserId(refreshToken.token) ?: throw UnauthorizedException()
         val userDto = userServiceProxy.getUserById(userId)
-        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userId)
+        val authorities = authoritySearchServiceProxy.getUserAuthorities(userId)
         return authenticateInternally(
             userId = userDto.userId,
             permissions = authorities.permissions,
