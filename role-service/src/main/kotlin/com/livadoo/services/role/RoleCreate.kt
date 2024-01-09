@@ -1,7 +1,9 @@
 package com.livadoo.services.role
 
+import jakarta.validation.constraints.NotBlank
+
 data class RoleCreate(
-    val role: String,
-    val title: String,
-    val description: String,
+    @field:NotBlank val role: String,
+    @field:NotBlank val title: String,
+    @field:NotBlank val description: String,
 )

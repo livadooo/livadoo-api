@@ -19,10 +19,10 @@ class DefaultPermissionService(
 ) : PermissionService {
     override suspend fun createPermission(permissionCreate: PermissionCreate): PermissionDto {
         val permissionEntity = PermissionEntity(
+            permissionId = buildPermissionId,
             permission = permissionCreate.permission,
             roleId = permissionCreate.roleId,
             description = permissionCreate.description,
-            base = permissionCreate.isBase,
             createdAt = clock.instant(),
             createdBy = securityContext.getCurrentUserId(),
         )
@@ -42,7 +42,7 @@ class DefaultPermissionService(
     }
 
     override suspend fun getBasePermissionsByRoles(roleIds: List<String>): List<String> {
-        return permissionRepository.findByBaseIsTrueAndRoleIdIn(roleIds)
+        return permissionRepository.findByRoleIdIn(roleIds)
             .map { it.id!! }
             .toList()
     }

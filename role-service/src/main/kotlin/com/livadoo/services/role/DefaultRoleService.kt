@@ -21,6 +21,7 @@ class DefaultRoleService(
     override suspend fun createRole(roleCreate: RoleCreate): RoleDto {
         val roleEntity =
             RoleEntity(
+                roleId = buildRoleId,
                 role = roleCreate.role,
                 title = roleCreate.title,
                 description = roleCreate.description,
@@ -54,7 +55,9 @@ class DefaultRoleService(
         return try {
             roleRepository.save(roleEntity)
         } catch (exception: DuplicateKeyException) {
-            if (exception.message!!.containsExceptionKey("role")) {
+            if (exception.message!!.containsExceptionKey("roleId")) {
+                handleSave(roleEntity.copy(roleId = buildRoleId))
+            } else if (exception.message!!.containsExceptionKey("role")) {
                 throw DuplicateRoleException(roleEntity.role)
             } else if (exception.message!!.containsExceptionKey("title")) {
                 throw DuplicateRoleTitleException(roleEntity.title)

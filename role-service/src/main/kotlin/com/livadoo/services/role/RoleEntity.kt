@@ -11,6 +11,8 @@ data class RoleEntity(
     @Indexed(unique = true)
     var role: String,
     @Indexed(unique = true)
+    var roleId: String,
+    @Indexed(unique = true)
     var title: String,
     var description: String,
     var createdAt: Instant,
@@ -28,5 +30,5 @@ fun RoleEntity.toDto(): RoleDto =
         role = role,
         title = title,
         description = description,
-        roleId = id!!,
+        roleId = roleId,
     )

@@ -13,8 +13,9 @@ import org.springframework.stereotype.Service
 import java.util.Date
 import javax.crypto.SecretKey
 
-private const val AUTHORITIES_KEY = "roles"
-private const val AUTHORITIES_DELIMITER = ","
+private const val ROLES_KEY = "roles"
+private const val PERMISSIONS_KEY = "permissions"
+private const val DELIMITER = ","
 
 @Service
 class JwtSigner(
@@ -24,14 +25,16 @@ class JwtSigner(
 
     fun createAccessToken(authentication: Authentication): String {
         val authUser = (authentication.principal as AuthUser)
-        val authorities = authUser.authorities.joinToString(AUTHORITIES_DELIMITER) { it.authority }
+        val permissions = authUser.authorities.joinToString(DELIMITER) { it.authority }
+        val roles = authUser.roles.joinToString(DELIMITER)
 
         val tokenValidityInMilliSeconds = securityProperties.tokenValidityInSeconds * 1000
         val validity = Date(System.currentTimeMillis() + tokenValidityInMilliSeconds)
-
+        val accessTokenKey = accessTokenKey
         return Jwts.builder()
             .subject(authUser.username)
-            .claim(AUTHORITIES_KEY, authorities)
+            .claim(PERMISSIONS_KEY, permissions)
+            .claim(ROLES_KEY, roles)
             .signWith(accessTokenKey, Jwts.SIG.HS512)
             .expiration(validity)
             .json(JacksonSerializer())

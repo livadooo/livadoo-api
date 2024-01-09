@@ -9,11 +9,12 @@ import java.time.Instant
 @Document("permissions")
 data class PermissionEntity(
     @Indexed(unique = true)
+    var permissionId: String,
+    @Indexed(unique = true)
     var permission: String,
     var description: String,
     val roleId: String,
     var createdAt: Instant,
-    var base: Boolean,
     var updatedAt: Instant? = null,
     var createdBy: String,
     var updatedBy: String? = null,
@@ -26,5 +27,5 @@ data class PermissionEntity(
 fun PermissionEntity.toDto(): PermissionDto = PermissionDto(
     permission = permission,
     description = description,
-    permissionId = id!!,
+    permissionId = permissionId,
 )

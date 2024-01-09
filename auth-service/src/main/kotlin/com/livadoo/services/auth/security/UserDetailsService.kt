@@ -37,7 +37,7 @@ class UserDetailsService(
         if (!userEntity.verified) {
             throw UnauthorizedException("Account not verified")
         }
-        val authorities = authoritySearchServiceProxy.getAuthoritiesByUserId(userEntity.userId)
+        val authorities = authoritySearchServiceProxy.getUserAuthorities(userEntity.userId)
 
         return AuthUser(
             username = userEntity.userId,
